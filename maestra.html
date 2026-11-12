@@ -3,242 +3,1504 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Maestra - Mi Bebé y Yo</title>
+  <title>Panel Docente - Mi Bebé y Yo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    :root {
-      --verde-bg: #e6f4ea;
-      --verde-texto: #137333;
-      --verde-borde: #a8dab5;
-      --rojo-bg: #fce8e6;
-      --rojo-texto: #c5221f;
-      --rojo-borde: #f5c2c0;
-      --azul-primario: #2563eb;
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: #f0f9ff;
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px), radial-gradient(#cbd5e1 1.2px, #f0f9ff 1.2px);
+      background-size: 48px 48px;
+      background-position: 0 0, 24px 24px;
     }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f1f5f9; margin: 0; padding: 20px; color: #1e293b; }
-    .contenedor { max-width: 900px; margin: 0 auto; }
-    
-    .header { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; }
-    .header h1 { margin: 0; font-size: 1.5rem; color: #0f172a; }
-    
-    /* Buscador */
-    .buscador-box { flex: 1; min-width: 250px; }
-    .buscador-input { width: 100%; padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 1rem; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
-    .buscador-input:focus { border-color: var(--azul-primario); }
-
-    /* Lista de Alumnos */
-    .grid-alumnos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-    .card-alumno { background: white; border-radius: 16px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; }
-    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .badge { background: #e2e8f0; color: #475569; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 8px; }
-    .nombre-alumno { font-size: 1.15rem; font-weight: 700; margin: 6px 0 2px 0; }
-    .bebe-alumno { font-size: 0.85rem; color: #64748b; }
-    .saldo-alumno { font-size: 1.6rem; font-weight: 800; color: #0f172a; margin: 12px 0; }
-    
-    .btn-historial { width: 100%; padding: 10px; background: #eff6ff; color: var(--azul-primario); border: 1.5px solid #bfdbfe; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
-    .btn-historial:hover { background: #dbeafe; }
-
-    /* Ventana Modal de Historial */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box; }
-    .modal-contenido { background: white; width: 100%; max-width: 550px; max-height: 85vh; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px; }
-    .modal-header h2 { margin: 0; font-size: 1.3rem; }
-    .btn-cerrar { background: #f1f5f9; border: none; font-size: 1.2rem; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-weight: bold; }
-    
-    .lista-historial { overflow-y: auto; flex: 1; padding-right: 5px; }
-    .item-historial { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 8px; background: #f8fafc; }
-    .item-info { text-align: left; }
-    .item-concepto { font-weight: 700; font-size: 0.95rem; }
-    .item-fecha { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
-    
-    .item-derecha { display: flex; align-items: center; gap: 10px; }
-    .monto-pos { color: var(--verde-texto); font-weight: 800; font-size: 1rem; }
-    .monto-neg { color: var(--rojo-texto); font-weight: 800; font-size: 1rem; }
-    
-    .btn-deshacer { background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
-    .btn-deshacer:hover { background: #ffe4e6; }
-    .vacio-msg { text-align: center; color: #94a3b8; padding: 30px 0; }
+    .font-heading { font-family: 'Fredoka', cursive; }
+    .card-playful {
+      background: white;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.15), 0 8px 10px -6px rgba(14, 165, 233, 0.1);
+      border: 3px solid #e0f2fe;
+    }
+    .action-btn-active {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.4);
+      font-weight: 900 !important;
+    }
+    @keyframes pulse-fast {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    .spinning-card {
+      animation: pulse-fast 0.22s infinite;
+    }
+    @keyframes shake-alert {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .cry-alert-shake {
+      animation: shake-alert 0.45s ease-in-out infinite;
+    }
   </style>
 </head>
-<body>
+<body class="min-h-screen text-slate-700 pb-12">
 
-  <div class="contenedor">
-    <!-- Encabezado y Buscador -->
-    <div class="header">
-      <div>
-        <h1>👶 Mi Bebé y Yo • Panel Maestra</h1>
-        <small style="color: #64748b;">Sincronizado en tiempo real con Firebase</small>
+  <!-- PANTALLA INICIAL DE SELECCIÓN DE GRUPO (ANTES DE ENTRAR) -->
+  <div id="pantalla-seleccion-inicial" class="fixed inset-0 bg-slate-900/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="card-playful p-8 max-w-lg w-full text-center space-y-6 border-t-8 border-t-sky-500 shadow-2xl">
+      <div class="w-20 h-20 mx-auto bg-sky-100 text-sky-500 rounded-3xl flex items-center justify-center text-4xl shadow-inner">
+        <i class="fa-solid fa-baby"></i>
       </div>
-      <div class="buscador-box">
-        <input type="text" id="buscador" class="buscador-input" placeholder="🔍 Buscar alumno por nombre..." oninput="filtrarAlumnos()">
+      <div class="space-y-1">
+        <h1 class="text-3xl font-black font-heading text-slate-800">¡Mi Bebé y Yo!</h1>
+        <p class="text-sm font-bold text-slate-500">Selecciona el salón en el que vas a trabajar hoy para evitar cruzar datos:</p>
       </div>
-    </div>
 
-    <!-- Tarjetas de alumnos -->
-    <div class="grid-alumnos" id="grid-alumnos">
-      <p>Cargando lista de alumnos...</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+        <button onclick="entrarAGrupo('6A')" class="group p-6 rounded-3xl border-4 border-sky-200 bg-sky-50 hover:bg-sky-500 hover:border-sky-500 transition-all shadow-md flex flex-col items-center gap-2 cursor-pointer">
+          <span class="text-4xl group-hover:scale-110 transition">🏫</span>
+          <span class="text-2xl font-black font-heading text-sky-900 group-hover:text-white">Grupo 6°A</span>
+          <span class="text-xs font-bold text-sky-600 group-hover:text-sky-100">Entrar a este salón →</span>
+        </button>
+
+        <button onclick="entrarAGrupo('6B')" class="group p-6 rounded-3xl border-4 border-indigo-200 bg-indigo-50 hover:bg-indigo-500 hover:border-indigo-500 transition-all shadow-md flex flex-col items-center gap-2 cursor-pointer">
+          <span class="text-4xl group-hover:scale-110 transition">🏫</span>
+          <span class="text-2xl font-black font-heading text-indigo-900 group-hover:text-white">Grupo 6°B</span>
+          <span class="text-xs font-bold text-indigo-600 group-hover:text-indigo-100">Entrar a este salón →</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- Ventana Emergente (Modal) para Historial y Deshacer -->
-  <div class="modal-overlay" id="modal-historial">
-    <div class="modal-contenido">
-      <div class="modal-header">
-        <div>
-          <h2 id="modal-titulo">Historial</h2>
-          <small id="modal-subtitulo" style="color: #64748b;"></small>
+  <!-- ENCABEZADO CON INDICADOR CLARO DEL GRUPO ACTIVO -->
+  <header class="bg-gradient-to-r from-sky-400 via-indigo-400 to-pink-400 text-white shadow-lg p-5 rounded-b-3xl relative overflow-hidden">
+    <div class="max-w-4xl mx-auto flex flex-wrap justify-between items-center gap-3 relative z-10">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white/30 backdrop-blur-md p-3 rounded-2xl shadow-inner">
+          <i class="fa-solid fa-baby text-3xl text-yellow-300"></i>
         </div>
-        <button class="btn-cerrar" onclick="cerrarModal()">✕</button>
+        <div>
+          <h1 class="text-2xl font-black font-heading tracking-wide">¡Mi Bebé y Yo!</h1>
+          <p class="text-xs font-bold text-sky-100">Panel Docente de Administración</p>
+        </div>
       </div>
-      
-      <div class="lista-historial" id="contenedor-historial">
-        <!-- Aquí se cargan los movimientos -->
+
+      <div class="flex items-center gap-2.5">
+        <div class="bg-white text-slate-800 px-4 py-2 rounded-2xl shadow-md flex items-center gap-2 border-2 border-yellow-300">
+          <span class="text-xs font-black uppercase text-slate-400">Salón Activo:</span>
+          <span class="text-lg font-black font-heading text-indigo-600">🏫 6°<span class="grupo-label">A</span></span>
+        </div>
+        <span class="hidden sm:inline-block bg-white/20 backdrop-blur-md px-3.5 py-2 rounded-xl text-xs font-bold border border-white/30">
+          ☁️ Nube Activa
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto p-4 space-y-6 mt-4">
+
+    <!-- SELECTOR DE GRUPO, RULETAS, IMPRIMIR CÓDIGOS Y REGISTRAR ALUMNO -->
+    <div class="card-playful p-4 border-t-8 border-t-sky-500 flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center gap-2 flex-wrap">
+        <h3 class="text-sm font-black font-heading text-slate-800 flex items-center gap-2 mr-1">
+          <i class="fa-solid fa-users text-sky-500"></i> Cambiar Grupo:
+        </h3>
+        <button id="btn-grupo-6A" onclick="seleccionarGrupo('6A')" class="px-4 py-2 rounded-2xl font-black text-sm font-heading shadow-md transition bg-sky-500 text-white">
+          🏫 6°A
+        </button>
+        <button id="btn-grupo-6B" onclick="seleccionarGrupo('6B')" class="px-4 py-2 rounded-2xl font-black text-sm font-heading transition bg-slate-100 text-slate-600 hover:bg-slate-200">
+          🏫 6°B
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2 flex-wrap">
+        <button onclick="abrirModalRuleta('imprevistos')" class="bg-gradient-to-r from-rose-500 to-red-600 hover:opacity-95 text-white font-black px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-heading shadow-md transition active:scale-95 flex items-center gap-1.5">
+          <i class="fa-solid fa-triangle-exclamation"></i> Ruleta Imprevistos
+        </button>
+        <button onclick="abrirModalRuleta('suerte')" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-white font-black px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-heading shadow-md transition active:scale-95 flex items-center gap-1.5">
+          <i class="fa-solid fa-clover"></i> Ruleta Buena Suerte
+        </button>
+        <button onclick="imprimirListaCodigos()" class="bg-amber-400 hover:bg-amber-500 text-amber-950 font-black px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-heading shadow-md transition active:scale-95 flex items-center gap-1.5">
+          <i class="fa-solid fa-print"></i> Códigos
+        </button>
+        <button onclick="abrirModalRegistro()" class="bg-teal-600 hover:bg-teal-700 text-white font-black px-3.5 py-2.5 rounded-2xl text-xs sm:text-sm font-heading shadow-md transition active:scale-95 flex items-center gap-1.5">
+          <i class="fa-solid fa-user-plus"></i> + Alumno
+        </button>
+      </div>
+    </div>
+
+    <!-- DETECTOR DE RUIDO DEL SALÓN (CON PROMEDIO Y RETARDADOR ANTI-PICOS) -->
+    <div id="card-detector-ruido" class="card-playful p-5 border-t-8 border-t-cyan-500 space-y-4 transition-all">
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center gap-2.5">
+          <div id="noise-icon-badge" class="w-10 h-10 rounded-2xl bg-cyan-100 text-cyan-600 flex items-center justify-center text-lg shadow-inner">
+            <i class="fa-solid fa-volume-high"></i>
+          </div>
+          <div>
+            <h2 class="text-sm sm:text-base font-black font-heading text-slate-800 flex items-center gap-2">
+              Detector de Ruido en el Salón (6°<span class="grupo-label">A</span>)
+              <span id="noise-status-pill" class="text-[10px] bg-slate-100 text-slate-500 px-2.5 py-0.5 rounded-full font-bold uppercase">Apagado</span>
+            </h2>
+            <p class="text-[11px] text-slate-500 font-semibold">Mide el promedio sostenido para ignorar golpes repentinos o tu voz al dar indicaciones.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="probarLlantoBebe()" title="Escuchar sonido de llanto de prueba" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-3 py-2 rounded-xl text-xs transition flex items-center gap-1.5">
+            <i class="fa-solid fa-baby"></i> Probar Llanto
+          </button>
+          <button id="btn-toggle-ruido" onclick="toggleDetectorRuido()" class="bg-cyan-600 hover:bg-cyan-700 text-white font-black px-4 py-2.5 rounded-xl text-xs font-heading shadow-md transition active:scale-95 flex items-center gap-1.5">
+            <i class="fa-solid fa-microphone"></i> Activar Detector
+          </button>
+        </div>
+      </div>
+
+      <!-- BARRAS VISUALES: PROMEDIO SOSTENIDO E INSTANTÁNEO -->
+      <div class="space-y-2.5">
+        <div class="space-y-1">
+          <div class="flex justify-between text-[11px] font-black">
+            <span class="text-cyan-800">📊 Promedio de ruido sostenido: <span id="noise-avg-val" class="font-mono text-sm">0%</span></span>
+            <span class="text-rose-600">Límite permitido: <span id="noise-limit-val" class="font-mono">65%</span></span>
+          </div>
+          <div class="w-full h-6 bg-slate-100 rounded-full overflow-hidden border-2 border-slate-200 relative p-0.5">
+            <div id="noise-meter-bar" class="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 rounded-full transition-all duration-150" style="width: 0%;"></div>
+            <div id="noise-threshold-marker" class="absolute top-0 bottom-0 w-1 bg-slate-900 shadow-md z-10" style="left: 65%;"></div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 text-[10px] font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+          <div class="flex items-center gap-2">
+            <span>🎙️ Sonido al instante: <b id="noise-current-val" class="font-mono text-slate-700">0%</b></span>
+          </div>
+          <div id="noise-sustain-status" class="text-emerald-600 font-black">
+            ✅ Ambiente tranquilo
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTROLES EDITABLES: SENSIBILIDAD, RETARDADOR Y TIPO DE DESCUENTO -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
+        <div class="space-y-1">
+          <label for="noise-threshold-slider" class="text-xs font-bold text-slate-700 flex justify-between">
+            <span>🎚️ Límite de ruido:</span>
+            <span id="noise-slider-label" class="font-mono font-black text-cyan-700">65%</span>
+          </label>
+          <input type="range" id="noise-threshold-slider" min="20" max="95" value="65" oninput="actualizarLimiteRuido(this.value)" class="w-full accent-cyan-600 cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-400 font-bold">
+            <span>Estricto (20%)</span>
+            <span>Tolerante (95%)</span>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label for="noise-delay-slider" class="text-xs font-bold text-slate-700 flex justify-between">
+            <span>⏱️ Retardador (Promedio):</span>
+            <span id="noise-delay-label" class="font-mono font-black text-indigo-700">5 seg</span>
+          </label>
+          <input type="range" id="noise-delay-slider" min="3" max="15" value="5" oninput="actualizarRetardadorRuido(this.value)" class="w-full accent-indigo-600 cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-400 font-bold">
+            <span>Rápido (3s)</span>
+            <span>Largo (15s)</span>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label for="noise-penalty-select" class="text-xs font-bold text-slate-700 block">
+            💸 Descuento a todo 6°<span class="grupo-label">A</span>:
+          </label>
+          <select id="noise-penalty-select" class="w-full p-2 border-2 border-slate-200 rounded-xl text-xs font-bold bg-slate-50 focus:border-cyan-400 outline-none">
+            <option value="-50|🧸 Juguete nuevo (Ruido en salón)">🧸 Juguete nuevo (-$50)</option>
+            <option value="-200|🍼🧷 Comida y Pañal (Ruido en salón)">🍼🧷 Comida y Pañal (-$200)</option>
+            <option value="-300|😭 Descuido (Ruido en salón)">😭 Descuido (-$300)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- BANNER DE ALERTA CUANDO EL BEBÉ LLORA -->
+      <div id="noise-cry-banner" class="hidden p-3.5 rounded-2xl bg-rose-500 text-white font-black text-xs sm:text-sm flex items-center justify-between shadow-lg">
+        <span id="noise-cry-message" class="flex items-center gap-2">
+          😭 ¡Demasiado ruido sostenido! El bebé despertó llorando. Descuento aplicado a todo 6°A.
+        </span>
+        <span id="noise-cooldown-badge" class="bg-white/25 px-2.5 py-1 rounded-xl text-[11px] font-mono shrink-0">
+          Pausa: 12s
+        </span>
+      </div>
+    </div>
+
+    <!-- PRESETS DE ACCIONES -->
+    <div class="card-playful p-5 border-t-8 border-t-amber-400 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h2 class="text-sm font-black font-heading text-slate-800">Acción Activa seleccionada:</h2>
+        <span id="label-accion-activa" class="bg-indigo-100 text-indigo-900 text-xs px-3 py-1 rounded-full font-black font-mono border border-indigo-200">
+          Actividad terminada (+$100)
+        </span>
+      </div>
+
+      <div class="space-y-2">
+        <p class="text-[11px] font-black text-emerald-600 uppercase">🌟 Ganancias e Ingresos Extra (+)</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <button onclick="setAccionActiva(100, 'Actividad terminada')" class="btn-preset action-btn-active bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">⭐ Actividad (+$100)</button>
+          <button onclick="setAccionActiva(200, 'Ayudante')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">🙋 Ayudante (+$200)</button>
+          <button onclick="setAccionActiva(200, 'DIF')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">🏛️ DIF (+$200)</button>
+          <button onclick="setAccionActiva(300, 'Trabajo excelente del día')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">🏆 Excelente (+$300)</button>
+          <button onclick="setAccionActiva(200, 'Regalo')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">🎁 Regalo (+$200)</button>
+          <button onclick="setAccionActiva(300, 'Regalo')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">🎁 Regalo (+$300)</button>
+          <button onclick="setAccionActiva(100, 'Encontró dinero')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">💵 Encontró (+$100)</button>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <p class="text-[11px] font-black text-rose-600 uppercase">💸 Gastos e Imprevistos (-)</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <button onclick="setAccionActiva(-1000, 'Maltrato infantil')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🚨 Maltrato (-$1000)</button>
+          <button onclick="setAccionActiva(-500, 'Abandono')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">⚠️ Abandono (-$500)</button>
+          <button onclick="setAccionActiva(-300, 'Descuido')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">😭 Descuido (-$300)</button>
+          <button onclick="setAccionActiva(-400, 'Cuidar bebés ajenos')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🚼 Bebés ajenos (-$400)</button>
+          <button onclick="setAccionActiva(-200, 'Comida y Pañal')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🍼🧷 Comida/Pañal (-$200)</button>
+          <button onclick="setAccionActiva(-500, 'Consulta y Medicina')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🩺 Salud (-$500)</button>
+          <button onclick="setAccionActiva(-500, 'Guardería')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🧸 Guardería (-$500)</button>
+          <button onclick="setAccionActiva(-200, 'Leche especial')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🍼 Leche especial (-$200)</button>
+          <button onclick="setAccionActiva(-100, 'Perdió dinero')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">💸 Perdió dinero (-$100)</button>
+          <button onclick="setAccionActiva(-50, 'Juguete nuevo')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🧸 Juguete (-$50)</button>
+          <button onclick="setAccionActiva(-100, 'Ropa nueva')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">👕 Ropa (-$100)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTONES DE APLICACIÓN MASIVA, MULTISELECCIÓN E HISTORIAL GRUPAL CON DESHACER -->
+    <div class="card-playful p-4 border-t-8 border-t-purple-500 bg-purple-50/40 space-y-3">
+      <h3 class="text-xs font-black uppercase text-purple-900 flex items-center gap-2">
+        <i class="fa-solid fa-list-check text-purple-600 text-sm"></i> Operaciones Masivas (Varios / Todos)
+      </h3>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="aplicarAccionSeleccionados()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-black py-2.5 px-4 rounded-xl shadow-md transition font-heading flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-user-check"></i> Aplicar a Seleccionados (<span id="count-seleccionados">0</span>)
+        </button>
+        <button onclick="aplicarAccionATodos()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black py-2.5 px-4 rounded-xl shadow-md transition font-heading flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-users"></i> Aplicar a Todo 6°<span class="grupo-label">A</span>
+        </button>
+      </div>
+
+      <!-- HISTORIAL RECIENTE DE ACCIONES GRUPALES / MASIVAS -->
+      <div class="pt-2 border-t border-purple-200/60 space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="text-[11px] font-black text-purple-900 flex items-center gap-1.5">
+            <i class="fa-solid fa-clock-rotate-left text-purple-600"></i> Últimas acciones grupales en 6°<span class="grupo-label">A</span>
+          </span>
+          <span class="text-[10px] text-purple-700/70 font-bold">Deshaz un movimiento en todos los alumnos afectados</span>
+        </div>
+        <div id="lista-historial-grupal" class="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+          <p class="text-[11px] text-slate-400 italic">No hay acciones grupales recientes en este grupo.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- LISTA DE ALUMNOS CON CHECKBOXES -->
+      <div class="card-playful p-4 md:col-span-1 border-t-8 border-t-indigo-400 space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="font-black text-sm text-slate-700 flex items-center gap-1">
+            <span id="titulo-lista-alumnos">Alumnos 6°A</span>
+            <span id="count-alumnos" class="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+          </h3>
+          <button onclick="toggleSeleccionarTodos()" class="text-[11px] font-bold text-indigo-600 hover:underline">
+            <span id="label-toggle-all">✓ Seleccionar todos</span>
+          </button>
+        </div>
+        <div id="lista-alumnos" class="space-y-2 max-h-[450px] overflow-y-auto pr-1"></div>
+      </div>
+
+      <!-- DETALLE DEL ALUMNO SELECCIONADO E HISTORIAL -->
+      <div class="card-playful p-5 md:col-span-2 border-t-8 border-t-pink-400">
+        <div id="detalle-alumno-container">
+          <div id="no-selected" class="py-12 text-center text-slate-400">
+            <i class="fa-solid fa-hand-pointer text-4xl mb-2 opacity-30 text-indigo-400"></i>
+            <p class="text-xs font-bold">Selecciona un alumno de la lista para ver su historial y operar</p>
+          </div>
+
+          <div id="selected-info" class="hidden space-y-4">
+            <div class="flex justify-between items-start border-b border-slate-100 pb-3">
+              <div>
+                <h3 id="info-nombre" class="text-xl font-black font-heading text-slate-800">---</h3>
+                <p class="text-xs text-slate-500">Bebé: <b id="info-bebe" class="text-slate-700">---</b> | Grupo: <b id="info-grupo" class="text-indigo-600 font-mono">---</b></p>
+                <p class="text-xs text-slate-400">Código ID: <span id="info-id" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-bold">---</span></p>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] font-bold text-slate-400 uppercase block">Saldo Actual</span>
+                <span id="info-saldo" class="text-3xl font-black text-indigo-600 font-heading">$0</span>
+              </div>
+            </div>
+
+            <!-- MÓDULO DE RESCATE FINANCIERO (SALDO NEGATIVO O DEUDA PENDIENTE) -->
+            <div id="panel-rescate-financiero" class="hidden p-4 rounded-2xl bg-rose-50 border-2 border-rose-300 space-y-3">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <h4 class="text-xs sm:text-sm font-black font-heading text-rose-800 flex items-center gap-1.5">
+                    🆘 Opciones de Rescate Financiero (Saldo Negativo / Deuda)
+                  </h4>
+                  <p class="text-[11px] font-bold text-rose-700 mt-0.5">
+                    📋 <b>Paso 4 Obligatorio:</b> Verifica que haya entregado su <u>presupuesto escrito</u> (ingresos, gastos y ahorro) antes de otorgar cualquier ayuda.
+                  </p>
+                </div>
+              </div>
+
+              <!-- AVISO DE PRÉSTAMO PENDIENTE SI TIENE DEUDA -->
+              <div id="alerta-deuda-activa" class="hidden p-3 rounded-xl bg-amber-100 border border-amber-300 flex flex-wrap items-center justify-between gap-2">
+                <div class="text-xs font-bold text-amber-950">
+                  ⚠️ <b>Deuda de préstamo activa:</b> Debe devolver <span id="monto-deuda-pendiente" class="font-mono font-black text-rose-700">$525</span> ($500 + 5% interés).
+                </div>
+                <button onclick="cobrarPrestamoPendiente()" class="bg-amber-500 hover:bg-amber-600 text-amber-950 font-black px-3 py-1.5 rounded-lg text-[11px] shadow-sm transition">
+                  💳 Cobrar Préstamo (-$<span id="btn-monto-cobro">525</span>)
+                </button>
+              </div>
+
+              <!-- BOTONES DE LAS 3 OPCIONES DE RESCATE -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                <!-- 1. Préstamo con 5% interés -->
+                <button onclick="otorgarPrestamoConInteres()" class="p-3 rounded-xl bg-white hover:bg-amber-50 border-2 border-amber-300 text-left transition shadow-sm flex flex-col justify-between gap-1">
+                  <span class="text-xs font-black text-amber-900">1. 🏦 Préstamo (+$500)</span>
+                  <span class="text-[10px] font-bold text-slate-500 leading-tight">Se abonan $500 hoy y queda deuda de <b>$525</b> (5% interés).</span>
+                </button>
+
+                <!-- 2. Trabajo extra -->
+                <button onclick="aprobarTrabajoExtra()" class="p-3 rounded-xl bg-white hover:bg-sky-50 border-2 border-sky-300 text-left transition shadow-sm flex flex-col justify-between gap-1">
+                  <span class="text-xs font-black text-sky-900">2. 📚 Trabajo Extra (+$300)</span>
+                  <span class="text-[10px] font-bold text-slate-500 leading-tight">Investigación costos bebé, tríptico anticonceptivos o exposición.</span>
+                </button>
+
+                <!-- 3. Programa de apoyo (1 sola vez) -->
+                <button id="btn-programa-apoyo" onclick="aprobarProgramaApoyo()" class="p-3 rounded-xl bg-white hover:bg-emerald-50 border-2 border-emerald-300 text-left transition shadow-sm flex flex-col justify-between gap-1">
+                  <span id="titulo-programa-apoyo" class="text-xs font-black text-emerald-900">3. ✉️ Apoyo Formal (+$500)</span>
+                  <span id="desc-programa-apoyo" class="text-[10px] font-bold text-slate-500 leading-tight">Carta formal completa aprobada. <b>(1 solo uso)</b></span>
+                </button>
+              </div>
+            </div>
+
+            <button onclick="aplicarAccionActivaManual()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black p-3.5 rounded-xl shadow-md transition font-heading">
+              ⚡ Aplicar Acción Activa a este Alumno
+            </button>
+
+            <!-- HISTORIAL DE MOVIMIENTOS DEL ALUMNO CON OPCIÓN DE DESHACER -->
+            <div class="pt-2 space-y-2">
+              <div class="flex justify-between items-center">
+                <h4 class="text-xs font-black uppercase text-slate-600 flex items-center gap-1.5">
+                  <i class="fa-solid fa-clock-rotate-left text-pink-500"></i> Historial de Movimientos
+                </h4>
+                <span class="text-[10px] text-slate-400 font-bold">Haz clic en "Deshacer" para revertir</span>
+              </div>
+              <div id="info-historial" class="space-y-2 max-h-[260px] overflow-y-auto pr-1"></div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex justify-end items-center">
+              <button onclick="eliminarAlumno()" class="text-xs text-rose-500 font-bold hover:underline flex items-center gap-1">
+                <i class="fa-solid fa-trash-can"></i> Eliminar Alumno del Sistema
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL DE RULETAS (IMPREVISTOS Y BUENA SUERTE PARA 5 ALUMNOS) -->
+  <div id="modal-ruleta" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div id="ruleta-card-border" class="card-playful p-6 sm:p-8 max-w-3xl w-full space-y-6 border-t-8 border-t-rose-500 shadow-2xl relative max-h-[95vh] overflow-y-auto">
+      <button onclick="cerrarModalRuleta()" class="absolute top-4 right-4 bg-slate-100 hover:bg-slate-200 text-slate-600 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg transition">
+        ✕
+      </button>
+
+      <div class="text-center space-y-1">
+        <span id="ruleta-badge-grupo" class="bg-rose-100 text-rose-700 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider">
+          Grupo 6°<span class="grupo-label">A</span> • 5 Alumnos al azar
+        </span>
+        <h2 id="ruleta-titulo" class="text-2xl sm:text-3xl font-black font-heading text-slate-800 flex items-center justify-center gap-2 pt-1">
+          🚨 Ruleta de Imprevistos
+        </h2>
+      </div>
+
+      <!-- SITUACIÓN EN LETRA GRANDE -->
+      <div id="box-ruleta-evento" class="bg-rose-50 border-4 border-rose-200 rounded-3xl p-6 text-center space-y-3 transition">
+        <span id="ruleta-evento-tag" class="inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wide bg-white border border-rose-200 text-rose-700">
+          🎲 Situación del día
+        </span>
+        <p id="ruleta-evento-historia" class="text-2xl sm:text-3xl font-black font-heading text-slate-900 leading-snug">
+          ¡Presiona girar para descubrir qué ocurrió hoy!
+        </p>
+        <div class="pt-1">
+          <span id="ruleta-evento-monto" class="inline-block px-5 py-1.5 rounded-2xl text-lg sm:text-xl font-black font-mono bg-white border-2 border-rose-300 text-slate-700 shadow-sm">
+            $0
+          </span>
+        </div>
+      </div>
+
+      <!-- LISTA DE LOS 5 ALUMNOS SELECCIONADOS -->
+      <div id="box-ruleta-alumnos" class="space-y-2.5">
+        <p class="text-xs font-black uppercase text-slate-500 text-center tracking-wider">
+          👥 Alumnos a los que les tocó esta situación:
+        </p>
+        <div id="ruleta-lista-5-alumnos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          <div class="col-span-full py-6 text-center text-slate-400 font-bold text-sm bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+            Los 5 alumnos aparecerán aquí al girar...
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTONES DE ACCIÓN -->
+      <div class="space-y-3 pt-1">
+        <button id="btn-girar-ruleta" onclick="girarRuleta()" class="w-full bg-gradient-to-r from-rose-500 to-red-600 hover:opacity-95 text-white font-black py-4 rounded-2xl text-lg sm:text-xl font-heading shadow-xl transition transform active:scale-95 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-play"></i> ¡GIRAR RULETA!
+        </button>
+
+        <div id="ruleta-accion-container" class="hidden space-y-2">
+          <button id="btn-aplicar-ruleta" onclick="aplicarResultadoRuleta()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-2xl text-base font-heading shadow-lg transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-bolt"></i> ⚡ Aplicar movimiento a estos 5 alumnos
+          </button>
+          <p id="ruleta-confirmacion-msg" class="text-center text-sm font-black text-emerald-600 hidden">
+            ✅ ¡Listo! Se registró el movimiento para los 5 alumnos en la nube.
+          </p>
+        </div>
       </div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+  <!-- MODAL PARA REGISTRAR NUEVO ALUMNO -->
+  <div id="modal-registro" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="card-playful p-6 max-w-md w-full space-y-4 border-t-8 border-t-teal-500 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="text-lg font-black font-heading text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-user-plus text-teal-500"></i> Registrar Nuevo Alumno
+        </h3>
+        <span id="modal-badge-grupo" class="text-xs bg-teal-100 text-teal-800 font-black px-2.5 py-1 rounded-lg">Grupo 6°A</span>
+      </div>
 
-    const firebaseConfig = {
-      databaseURL: "https://mi-bebe-y-yo-233db-default-rtdb.firebaseio.com"
-    };
+      <form id="form-registro" onsubmit="registrarAlumno(event)" class="space-y-3">
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Nombre del Alumno:</label>
+          <input type="text" id="reg-nombre" placeholder="Ej. Sofía Hernández" required class="w-full p-3 border-2 border-slate-200 rounded-xl text-xs font-bold focus:border-teal-400 outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Nombre del Bebé:</label>
+          <input type="text" id="reg-bebe" placeholder="Ej. Mateo" required class="w-full p-3 border-2 border-slate-200 rounded-xl text-xs font-bold focus:border-teal-400 outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-600 block mb-1">Dinero Inicial ($):</label>
+          <input type="number" id="reg-saldo" value="1000" required class="w-full p-3 border-2 border-slate-200 rounded-xl text-xs font-bold focus:border-teal-400 outline-none">
+        </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="cerrarModalRegistro()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl text-xs">
+            Cancelar
+          </button>
+          <button type="submit" class="flex-1 bg-teal-500 hover:bg-teal-600 text-white font-black py-3 rounded-xl text-xs font-heading shadow-md">
+            Guardar en 6°<span class="grupo-label">A</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-    let todosLosAlumnos = {};
-    let alumnoSeleccionadoId = null;
+  <script>
+    const FIREBASE_URL = "https://mi-bebe-y-yo-233db-default-rtdb.firebaseio.com/";
+    firebase.initializeApp({ databaseURL: FIREBASE_URL });
+    const db = firebase.database();
 
-    // 1. Escuchar cambios en tiempo real desde Firebase
-    const alumnosRef = ref(db, 'alumnos');
-    onValue(alumnosRef, (snapshot) => {
-      todosLosAlumnos = snapshot.val() || {};
-      renderizarAlumnos();
-      
-      // Si el modal de historial está abierto, actualizarlo en vivo
-      if (alumnoSeleccionadoId && todosLosAlumnos[alumnoSeleccionadoId]) {
-        renderizarHistorial(alumnoSeleccionadoId);
-      }
+    let alumnosObj = {};
+    let lotesGrupalesObj = {};
+    let grupoActivo = '6A';
+    let selectedId = null;
+    let seleccionadosSet = new Set();
+    let accionActiva = { monto: 100, motivo: 'Actividad terminada' };
+
+    // VARIABLES DEL DETECTOR DE RUIDO CON PROMEDIO Y RETARDADOR
+    let detectorActivo = false;
+    let audioContext = null;
+    let micStream = null;
+    let analyserNode = null;
+    let noiseAnimFrame = null;
+    let limiteRuido = 65;
+    let ventanaSegundos = 5;
+    let historialMuestrasRuido = [];
+    let enPausaRuido = false;
+    let cooldownInterval = null;
+
+    // CATÁLOGOS EXACTOS DE IMPREVISTOS Y BUENA SUERTE
+    const LISTA_IMPREVISTOS = [
+      { historia: "Tu bebé amaneció con fiebre y lo llevaste al doctor.", concepto: "🩺 Salud", monto: -500 },
+      { historia: "Tu bebé se ve amarillo y el doctor le pidió estudios.", concepto: "🩺 Salud", monto: -500 },
+      { historia: "La leche normal le hace daño y necesita una leche especial.", concepto: "🍼 Leche especial", monto: -200 },
+      { historia: "Vomita mucho y el doctor le cambió la leche.", concepto: "🍼 Leche especial", monto: -200 },
+      { historia: "Le dio diarrea y gastó el doble de pañales.", concepto: "🍼🧷 Comida/Pañal", monto: -200 },
+      { historia: "Hoy tuvo mucha hambre y comió más de lo normal.", concepto: "🍼🧷 Comida/Pañal", monto: -200 },
+      { historia: "Vomitó sobre su ropa y no tenía otra limpia.", concepto: "👕 Ropa", monto: -100 },
+      { historia: "La ropa de recién nacido no le queda.", concepto: "👕 Ropa", monto: -100 },
+      { historia: "Necesita un móvil para su cuna.", concepto: "🧸 Juguete", monto: -50 },
+      { historia: "Su sonaja se cayó en un charco.", concepto: "🧸 Juguete", monto: -50 },
+      { historia: "Por andar con prisa, se te cayó el cambio en el patio.", concepto: "💸 Perdió dinero", monto: -100 },
+      { historia: "Olvidaste tu cartera en el camión.", concepto: "💸 Perdió dinero", monto: -100 }
+    ];
+
+    const LISTA_SUERTE = [
+      { historia: "Tus compañeros te hicieron una fiesta para el bebé.", concepto: "🎁 Regalo", monto: 200 },
+      { historia: "Los abuelos te trajeron pañales y leche.", concepto: "🎁 Regalo", monto: 200 },
+      { historia: "Los padrinos le regalaron dinero.", concepto: "🎁 Regalo", monto: 300 },
+      { historia: "Tu tía le compró ropa nueva.", concepto: "🎁 Regalo", monto: 300 },
+      { historia: "Encontraste un billete en tu chamarra.", concepto: "💵 Encontró", monto: 100 },
+      { historia: "Encontraste dinero guardado en la pañalera.", concepto: "💵 Encontró", monto: 100 }
+    ];
+
+    let tipoRuletaActual = 'imprevistos';
+    let ruletaInterval = null;
+    let resultadoRuletaActual = null;
+
+    // --- PANTALLA INICIAL DE SELECCIÓN DE GRUPO ---
+    function entrarAGrupo(grupo) {
+      seleccionarGrupo(grupo);
+      document.getElementById('pantalla-seleccion-inicial').classList.add('hidden');
+    }
+
+    db.ref('alumnos').on('value', snapshot => {
+      alumnosObj = snapshot.val() || {};
+      render();
     });
 
-    // 2. Mostrar tarjetas de alumnos (aplicando filtro de búsqueda)
-    window.filtrarAlumnos = function() {
-      renderizarAlumnos();
-    };
+    db.ref('historial_grupal').on('value', snapshot => {
+      lotesGrupalesObj = snapshot.val() || {};
+      renderHistorialGrupal();
+    });
 
-    function renderizarAlumnos() {
-      const grid = document.getElementById('grid-alumnos');
-      const textoBusqueda = document.getElementById('buscador').value.toLowerCase().trim();
-      grid.innerHTML = "";
+    // --- LÓGICA DE RESCATE FINANCIERO (SALDO NEGATIVO) ---
+    function otorgarPrestamoConInteres() {
+      if (!selectedId) return;
+      const alumno = alumnosObj[selectedId];
+      if (!alumno) return;
 
-      const ids = Object.keys(todosLosAlumnos);
-      let encontrados = 0;
+      const deudaActual = alumno.deudaPrestamo || 0;
+      const confirmar = confirm(
+        `¿Otorgar PRÉSTAMO DE $500 a ${alumno.nombre}?\n\n` +
+        `• Se le abonarán +$500 ahora mismo.\n` +
+        `• Con el 5% de interés ($25), su deuda a pagar será de $${deudaActual + 525}.\n` +
+        `• Recuerda verificar que haya entregado su presupuesto obligatorio.`
+      );
+      if (!confirmar) return;
 
-      ids.forEach(id => {
-        const alumno = todosLosAlumnos[id];
-        const nombre = (alumno.nombre || "").toLowerCase();
-        const bebe = (alumno.bebe || "").toLowerCase();
+      const nuevoSaldo = alumno.saldo + 500;
+      const nuevaDeuda = deudaActual + 525;
+      const historial = alumno.historial || [];
+      historial.unshift({
+        fecha: new Date().toISOString(),
+        monto: 500,
+        motivo: '🏦 Préstamo recibido (+5% interés: deberá devolver $525)'
+      });
 
-        if (nombre.includes(textoBusqueda) || bebe.includes(textoBusqueda) || id.toLowerCase().includes(textoBusqueda)) {
-          encontrados++;
-          const card = document.createElement('div');
-          card.className = 'card-alumno';
-          card.innerHTML = `
-            <div>
-              <div class="card-top">
-                <span class="badge">Grupo ${alumno.grupo || '-'}</span>
-                <span class="badge">${id}</span>
-              </div>
-              <div class="nombre-alumno">${alumno.nombre || 'Sin nombre'}</div>
-              <div class="bebe-alumno">👶 Bebé: ${alumno.bebe || 'Sin asignar'}</div>
-            </div>
-            <div>
-              <div class="saldo-alumno">$${alumno.saldo ?? 0}</div>
-              <button class="btn-historial" onclick="abrirHistorial('${id}')">📋 Ver Historial / Deshacer</button>
-            </div>
-          `;
-          grid.appendChild(card);
+      db.ref('alumnos/' + selectedId).update({
+        saldo: nuevoSaldo,
+        deudaPrestamo: nuevaDeuda,
+        historial
+      });
+    }
+
+    function cobrarPrestamoPendiente() {
+      if (!selectedId) return;
+      const alumno = alumnosObj[selectedId];
+      if (!alumno || !alumno.deudaPrestamo) return;
+
+      const montoCobro = alumno.deudaPrestamo;
+      const confirmar = confirm(
+        `¿Cobrar el préstamo pendiente de $${montoCobro} (capital + 5% interés) a ${alumno.nombre}?`
+      );
+      if (!confirmar) return;
+
+      const nuevoSaldo = alumno.saldo - montoCobro;
+      const historial = alumno.historial || [];
+      historial.unshift({
+        fecha: new Date().toISOString(),
+        monto: -montoCobro,
+        motivo: `💳 Pago de préstamo con 5% de interés (-$${montoCobro})`
+      });
+
+      db.ref('alumnos/' + selectedId).update({
+        saldo: nuevoSaldo,
+        deudaPrestamo: 0,
+        historial
+      });
+    }
+
+    function aprobarTrabajoExtra() {
+      if (!selectedId) return;
+      const alumno = alumnosObj[selectedId];
+      if (!alumno) return;
+
+      const confirmar = confirm(
+        `¿Aprobar TRABAJO EXTRA (+$300) para ${alumno.nombre}?\n\n` +
+        `(Investigación de costos de un bebé en México, tríptico de métodos anticonceptivos o mini exposición con cartel + presupuesto obligatorio).`
+      );
+      if (!confirmar) return;
+
+      aplicarTransaccion(selectedId, 300, '📚 Trabajo extra aprobado (Presupuesto + Tarea especial)');
+    }
+
+    function aprobarProgramaApoyo() {
+      if (!selectedId) return;
+      const alumno = alumnosObj[selectedId];
+      if (!alumno) return;
+
+      if (alumno.apoyoFormalUsado) {
+        return alert(`⚠️ ${alumno.nombre} ya utilizó su Programa de Apoyo Formal. Esta ayuda solo puede usarse una vez en todo el proyecto.`);
+      }
+
+      const confirmar = confirm(
+        `¿Aprobar PROGRAMA DE APOYO FORMAL (+$500) para ${alumno.nombre}?\n\n` +
+        `• Verifica que su carta formal cumpla con todas sus partes y haya entregado su presupuesto.\n` +
+        `• Esta opción quedará bloqueada para este alumno después de aplicarse.`
+      );
+      if (!confirmar) return;
+
+      const nuevoSaldo = alumno.saldo + 500;
+      const historial = alumno.historial || [];
+      historial.unshift({
+        fecha: new Date().toISOString(),
+        monto: 500,
+        motivo: '✉️ Programa de apoyo aprobado (Carta formal — Uso único)'
+      });
+
+      db.ref('alumnos/' + selectedId).update({
+        saldo: nuevoSaldo,
+        apoyoFormalUsado: true,
+        historial
+      });
+    }
+
+    // --- REPRODUCTOR DE LLANTO MP3 REAL + RESPALDO SINTETIZADO ---
+    const audioLlantoReal = new Audio('llanto.mp3');
+
+    function reproducirLlantoBebe() {
+      audioLlantoReal.currentTime = 0;
+      audioLlantoReal.play().catch(err => {
+        console.warn("No se encontró llanto.mp3 o el navegador bloqueó el audio, usando respaldo:", err);
+        reproducirLlantoSintetizadoRespaldo();
+      });
+    }
+
+    function reproducirLlantoSintetizadoRespaldo() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const ahora = ctx.currentTime;
+
+        [0, 0.65, 1.3].forEach((offset, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          const vibrato = ctx.createOscillator();
+          const vibratoGain = ctx.createGain();
+
+          osc.type = 'sawtooth';
+          const inicio = ahora + offset;
+          const duracion = idx === 2 ? 0.85 : 0.55;
+
+          osc.frequency.setValueAtTime(490, inicio);
+          osc.frequency.linearRampToValueAtTime(650, inicio + duracion * 0.35);
+          osc.frequency.exponentialRampToValueAtTime(410, inicio + duracion);
+
+          vibrato.frequency.value = 14;
+          vibratoGain.gain.value = 18;
+          vibrato.connect(vibratoGain);
+          vibratoGain.connect(osc.frequency);
+
+          const filter = ctx.createBiquadFilter();
+          filter.type = 'bandpass';
+          filter.frequency.value = 950;
+          filter.Q.value = 1.8;
+
+          gain.gain.setValueAtTime(0.01, inicio);
+          gain.gain.linearRampToValueAtTime(0.35, inicio + 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, inicio + duracion);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(inicio);
+          vibrato.start(inicio);
+          osc.stop(inicio + duracion);
+          vibrato.stop(inicio + duracion);
+        });
+      } catch (e) {
+        console.warn("Audio no disponible:", e);
+      }
+    }
+
+    function probarLlantoBebe() {
+      reproducirLlantoBebe();
+    }
+
+    // --- LÓGICA DEL DETECTOR DE RUIDO CON PROMEDIO Y RETARDADOR ---
+    function actualizarLimiteRuido(valor) {
+      limiteRuido = parseInt(valor);
+      document.getElementById('noise-limit-val').textContent = `${limiteRuido}%`;
+      document.getElementById('noise-slider-label').textContent = `${limiteRuido}%`;
+      document.getElementById('noise-threshold-marker').style.left = `${limiteRuido}%`;
+    }
+
+    function actualizarRetardadorRuido(segundos) {
+      ventanaSegundos = parseInt(segundos);
+      document.getElementById('noise-delay-label').textContent = `${ventanaSegundos} seg`;
+    }
+
+    async function toggleDetectorRuido() {
+      if (detectorActivo) {
+        detenerDetectorRuido();
+      } else {
+        await iniciarDetectorRuido();
+      }
+    }
+
+    async function iniciarDetectorRuido() {
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const source = audioContext.createMediaStreamSource(micStream);
+        analyserNode = audioContext.createAnalyser();
+        analyserNode.fftSize = 256;
+        source.connect(analyserNode);
+
+        detectorActivo = true;
+        enPausaRuido = false;
+        historialMuestrasRuido = [];
+
+        const btn = document.getElementById('btn-toggle-ruido');
+        btn.innerHTML = '<i class="fa-solid fa-stop"></i> Detener';
+        btn.className = "bg-rose-600 hover:bg-rose-700 text-white font-black px-4 py-2.5 rounded-xl text-xs font-heading shadow-md transition active:scale-95 flex items-center gap-1.5";
+
+        const pill = document.getElementById('noise-status-pill');
+        pill.textContent = "Promediando 🎙️";
+        pill.className = "text-[10px] bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full font-bold uppercase animate-pulse";
+
+        monitorearNivelSonido();
+      } catch (err) {
+        alert("No se pudo acceder al micrófono. Verifica los permisos de tu navegador.");
+      }
+    }
+
+    function detenerDetectorRuido() {
+      detectorActivo = false;
+      historialMuestrasRuido = [];
+      if (noiseAnimFrame) cancelAnimationFrame(noiseAnimFrame);
+      if (cooldownInterval) clearInterval(cooldownInterval);
+      if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+        micStream = null;
+      }
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
+      }
+
+      document.getElementById('noise-meter-bar').style.width = '0%';
+      document.getElementById('noise-avg-val').textContent = '0%';
+      document.getElementById('noise-current-val').textContent = '0%';
+      document.getElementById('noise-sustain-status').textContent = '✅ Ambiente tranquilo';
+      document.getElementById('noise-sustain-status').className = 'text-emerald-600 font-black';
+      document.getElementById('noise-cry-banner').classList.add('hidden');
+      document.getElementById('card-detector-ruido').classList.remove('cry-alert-shake', 'border-t-rose-500');
+      document.getElementById('card-detector-ruido').classList.add('border-t-cyan-500');
+
+      const btn = document.getElementById('btn-toggle-ruido');
+      btn.innerHTML = '<i class="fa-solid fa-microphone"></i> Activar Detector';
+      btn.className = "bg-cyan-600 hover:bg-cyan-700 text-white font-black px-4 py-2.5 rounded-xl text-xs font-heading shadow-md transition active:scale-95 flex items-center gap-1.5";
+
+      const pill = document.getElementById('noise-status-pill');
+      pill.textContent = "Apagado";
+      pill.className = "text-[10px] bg-slate-100 text-slate-500 px-2.5 py-0.5 rounded-full font-bold uppercase";
+    }
+
+    function monitorearNivelSonido() {
+      if (!detectorActivo || !analyserNode) return;
+
+      const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+      analyserNode.getByteFrequencyData(dataArray);
+
+      let suma = 0;
+      for (let i = 0; i < dataArray.length; i++) {
+        suma += dataArray[i];
+      }
+      const promedioFrec = suma / dataArray.length;
+      const nivelInstantaneo = Math.min(100, Math.round((promedioFrec / 128) * 100));
+
+      const ahora = Date.now();
+      const ventanaMs = ventanaSegundos * 1000;
+
+      historialMuestrasRuido.push({ t: ahora, val: nivelInstantaneo });
+      historialMuestrasRuido = historialMuestrasRuido.filter(m => (ahora - m.t) <= ventanaMs);
+
+      const sumaMuestras = historialMuestrasRuido.reduce((acc, item) => acc + item.val, 0);
+      const promedioSostenido = Math.round(sumaMuestras / historialMuestrasRuido.length);
+
+      const tiempoAcumuladoMs = historialMuestrasRuido.length > 1
+        ? ahora - historialMuestrasRuido[0].t
+        : 0;
+      const ventanaCompleta = tiempoAcumuladoMs >= (ventanaMs * 0.85);
+
+      document.getElementById('noise-current-val').textContent = `${nivelInstantaneo}%`;
+      document.getElementById('noise-avg-val').textContent = `${promedioSostenido}%`;
+      document.getElementById('noise-meter-bar').style.width = `${promedioSostenido}%`;
+
+      const statusLabel = document.getElementById('noise-sustain-status');
+      if (!enPausaRuido) {
+        if (promedioSostenido >= limiteRuido) {
+          const segsFaltantes = Math.max(0, Math.ceil((ventanaMs - tiempoAcumuladoMs) / 1000));
+          statusLabel.textContent = ventanaCompleta
+            ? '🚨 ¡Límite rebasado!'
+            : `⚠️ Ruido alto... evaluando (${segsFaltantes}s)`;
+          statusLabel.className = 'text-rose-600 font-black animate-pulse';
+        } else if (nivelInstantaneo >= limiteRuido) {
+          statusLabel.textContent = '🔊 Pico momentáneo ignorado (promedio bajo)';
+          statusLabel.className = 'text-amber-600 font-black';
+        } else {
+          statusLabel.textContent = '✅ Ambiente tranquilo';
+          statusLabel.className = 'text-emerald-600 font-black';
+        }
+      }
+
+      if (ventanaCompleta && promedioSostenido >= limiteRuido && !enPausaRuido) {
+        dispararAlertaRuidoYDescuento();
+      }
+
+      noiseAnimFrame = requestAnimationFrame(monitorearNivelSonido);
+    }
+
+    function dispararAlertaRuidoYDescuento() {
+      enPausaRuido = true;
+      historialMuestrasRuido = [];
+      reproducirLlantoBebe();
+
+      const seleccion = document.getElementById('noise-penalty-select').value.split('|');
+      const montoDescuento = parseInt(seleccion[0]);
+      const motivoDescuento = seleccion[1];
+
+      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
+      const idsAfectados = alumnosDelGrupo.map(a => a.id);
+
+      if (idsAfectados.length > 0) {
+        aplicarTransaccionMasivaConRegistro(idsAfectados, montoDescuento, motivoDescuento, `Todo 6°${grupoActivo} (Ruido)`);
+      }
+
+      const card = document.getElementById('card-detector-ruido');
+      const banner = document.getElementById('noise-cry-banner');
+      const msg = document.getElementById('noise-cry-message');
+      const cooldownBadge = document.getElementById('noise-cooldown-badge');
+
+      card.classList.remove('border-t-cyan-500');
+      card.classList.add('border-t-rose-500', 'cry-alert-shake');
+      msg.textContent = `😭 ¡Mucho ruido sostenido! El bebé lloró y se descontó $${Math.abs(montoDescuento)} (${motivoDescuento}) a todo 6°${grupoActivo}.`;
+      banner.classList.remove('hidden');
+
+      let segundosRestantes = 12;
+      cooldownBadge.textContent = `Pausa: ${segundosRestantes}s`;
+
+      if (cooldownInterval) clearInterval(cooldownInterval);
+      cooldownInterval = setInterval(() => {
+        segundosRestantes--;
+        if (segundosRestantes <= 0) {
+          clearInterval(cooldownInterval);
+          enPausaRuido = false;
+          historialMuestrasRuido = [];
+          card.classList.remove('cry-alert-shake', 'border-t-rose-500');
+          card.classList.add('border-t-cyan-500');
+          banner.classList.add('hidden');
+        } else {
+          cooldownBadge.textContent = `Pausa: ${segundosRestantes}s`;
+        }
+      }, 1000);
+    }
+
+    // --- LÓGICA DE LAS DOS RULETAS (5 ALUMNOS A LA VEZ) ---
+    function abrirModalRuleta(tipo) {
+      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
+      if (alumnosDelGrupo.length === 0) {
+        return alert(`No hay alumnos registrados en 6°${grupoActivo} para girar la ruleta.`);
+      }
+
+      tipoRuletaActual = tipo;
+      resultadoRuletaActual = null;
+
+      const esSuerte = tipo === 'suerte';
+      const cardBorder = document.getElementById('ruleta-card-border');
+      const badgeGrupo = document.getElementById('ruleta-badge-grupo');
+      const titulo = document.getElementById('ruleta-titulo');
+      const boxEvento = document.getElementById('box-ruleta-evento');
+      const tagEvento = document.getElementById('ruleta-evento-tag');
+      const badgeMonto = document.getElementById('ruleta-evento-monto');
+      const btnGirar = document.getElementById('btn-girar-ruleta');
+
+      if (esSuerte) {
+        cardBorder.className = "card-playful p-6 sm:p-8 max-w-3xl w-full space-y-6 border-t-8 border-t-emerald-500 shadow-2xl relative max-h-[95vh] overflow-y-auto";
+        badgeGrupo.className = "bg-emerald-100 text-emerald-800 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider";
+        titulo.innerHTML = '🍀 Ruleta de Buena Suerte';
+        boxEvento.className = "bg-emerald-50 border-4 border-emerald-200 rounded-3xl p-6 text-center space-y-3 transition";
+        tagEvento.className = "inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wide bg-white border border-emerald-200 text-emerald-700";
+        badgeMonto.className = "inline-block px-5 py-1.5 rounded-2xl text-lg sm:text-xl font-black font-mono bg-white border-2 border-emerald-300 text-slate-700 shadow-sm";
+        btnGirar.className = "w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-95 text-white font-black py-4 rounded-2xl text-lg sm:text-xl font-heading shadow-xl transition transform active:scale-95 flex items-center justify-center gap-2";
+      } else {
+        cardBorder.className = "card-playful p-6 sm:p-8 max-w-3xl w-full space-y-6 border-t-8 border-t-rose-500 shadow-2xl relative max-h-[95vh] overflow-y-auto";
+        badgeGrupo.className = "bg-rose-100 text-rose-700 text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider";
+        titulo.innerHTML = '🚨 Ruleta de Imprevistos';
+        boxEvento.className = "bg-rose-50 border-4 border-rose-200 rounded-3xl p-6 text-center space-y-3 transition";
+        tagEvento.className = "inline-block px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wide bg-white border border-rose-200 text-rose-700";
+        badgeMonto.className = "inline-block px-5 py-1.5 rounded-2xl text-lg sm:text-xl font-black font-mono bg-white border-2 border-rose-300 text-slate-700 shadow-sm";
+        btnGirar.className = "w-full bg-gradient-to-r from-rose-500 to-red-600 hover:opacity-95 text-white font-black py-4 rounded-2xl text-lg sm:text-xl font-heading shadow-xl transition transform active:scale-95 flex items-center justify-center gap-2";
+      }
+
+      document.getElementById('ruleta-evento-historia').textContent = '¡Presiona girar para descubrir qué ocurrió hoy!';
+      badgeMonto.textContent = '$0';
+      btnGirar.innerHTML = '<i class="fa-solid fa-play"></i> ¡GIRAR RULETA!';
+
+      document.getElementById('ruleta-lista-5-alumnos').innerHTML = `
+        <div class="col-span-full py-6 text-center text-slate-400 font-bold text-sm bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+          Los 5 alumnos aparecerán aquí al girar...
+        </div>
+      `;
+
+      document.getElementById('ruleta-accion-container').classList.add('hidden');
+      document.getElementById('ruleta-confirmacion-msg').classList.add('hidden');
+      document.getElementById('btn-aplicar-ruleta').classList.remove('hidden');
+      document.getElementById('modal-ruleta').classList.remove('hidden');
+    }
+
+    function cerrarModalRuleta() {
+      if (ruletaInterval) clearInterval(ruletaInterval);
+      document.getElementById('modal-ruleta').classList.add('hidden');
+    }
+
+    function obtener5AlumnosAleatorios(lista) {
+      const copia = [...lista];
+      for (let i = copia.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copia[i], copia[j]] = [copia[j], copia[i]];
+      }
+      return copia.slice(0, Math.min(5, copia.length));
+    }
+
+    function girarRuleta() {
+      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
+      if (alumnosDelGrupo.length === 0) return;
+
+      if (ruletaInterval) clearInterval(ruletaInterval);
+
+      const catalogoEventos = tipoRuletaActual === 'suerte' ? LISTA_SUERTE : LISTA_IMPREVISTOS;
+      const btnGirar = document.getElementById('btn-girar-ruleta');
+      const boxEvento = document.getElementById('box-ruleta-evento');
+      const boxAlumnos = document.getElementById('box-ruleta-alumnos');
+      const accionContainer = document.getElementById('ruleta-accion-container');
+
+      btnGirar.disabled = true;
+      btnGirar.classList.add('opacity-60');
+      accionContainer.classList.add('hidden');
+      document.getElementById('ruleta-confirmacion-msg').classList.add('hidden');
+      document.getElementById('btn-aplicar-ruleta').classList.remove('hidden');
+
+      boxEvento.classList.add('spinning-card');
+      boxAlumnos.classList.add('spinning-card');
+
+      let vueltas = 0;
+      const totalVueltas = 22;
+
+      ruletaInterval = setInterval(() => {
+        const cincoAlumnos = obtener5AlumnosAleatorios(alumnosDelGrupo);
+        const eventoAzar = catalogoEventos[Math.floor(Math.random() * catalogoEventos.length)];
+
+        renderVistaPreviaRuleta(cincoAlumnos, eventoAzar);
+        vueltas++;
+
+        if (vueltas >= totalVueltas) {
+          clearInterval(ruletaInterval);
+          ruletaInterval = null;
+          boxEvento.classList.remove('spinning-card');
+          boxAlumnos.classList.remove('spinning-card');
+          btnGirar.disabled = false;
+          btnGirar.classList.remove('opacity-60');
+          btnGirar.innerHTML = '<i class="fa-solid fa-rotate"></i> GIRAR DE NUEVO';
+
+          resultadoRuletaActual = { alumnos: cincoAlumnos, evento: eventoAzar };
+          document.getElementById('btn-aplicar-ruleta').innerHTML = `<i class="fa-solid fa-bolt"></i> ⚡ Aplicar a estos ${cincoAlumnos.length} alumnos`;
+          accionContainer.classList.remove('hidden');
+        }
+      }, 90);
+    }
+
+    function renderVistaPreviaRuleta(cincoAlumnos, evento) {
+      document.getElementById('ruleta-evento-historia').textContent = evento.historia;
+
+      const esPositivo = evento.monto > 0;
+      const badgeMonto = document.getElementById('ruleta-evento-monto');
+      badgeMonto.textContent = `${evento.concepto}: ${esPositivo ? '+$' : '-$'}${Math.abs(evento.monto)}`;
+      badgeMonto.className = esPositivo
+        ? 'inline-block px-5 py-1.5 rounded-2xl text-lg sm:text-xl font-black font-mono bg-emerald-500 text-white shadow-md'
+        : 'inline-block px-5 py-1.5 rounded-2xl text-lg sm:text-xl font-black font-mono bg-rose-500 text-white shadow-md';
+
+      const colorCard = esPositivo ? 'bg-emerald-50/70 border-emerald-200' : 'bg-rose-50/70 border-rose-200';
+      const colorNum = esPositivo ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white';
+
+      document.getElementById('ruleta-lista-5-alumnos').innerHTML = cincoAlumnos.map((al, i) => `
+        <div class="p-3 rounded-2xl border-2 ${colorCard} flex items-center gap-2.5 shadow-sm">
+          <span class="w-7 h-7 rounded-full ${colorNum} font-black text-xs flex items-center justify-center shrink-0">
+            ${i + 1}
+          </span>
+          <div class="truncate">
+            <p class="font-black text-sm text-slate-800 truncate">${al.nombre}</p>
+            <p class="text-[11px] font-bold text-slate-500 truncate">👶 ${al.bebe}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function aplicarResultadoRuleta() {
+      if (!resultadoRuletaActual) return;
+      const { alumnos, evento } = resultadoRuletaActual;
+      const prefijo = tipoRuletaActual === 'suerte' ? '🍀 Suerte' : '🚨 Imprevisto';
+      const motivoRegistro = `${prefijo} (${evento.concepto}): ${evento.historia}`;
+      const ids = alumnos.map(al => al.id);
+
+      aplicarTransaccionMasivaConRegistro(ids, evento.monto, motivoRegistro, `${alumnos.length} alumnos (Ruleta)`);
+
+      document.getElementById('btn-aplicar-ruleta').classList.add('hidden');
+      document.getElementById('ruleta-confirmacion-msg').classList.remove('hidden');
+    }
+
+    // --- GESTIÓN DE REGISTRO Y ACCIONES GRUPALES CON DESHACER ---
+    function aplicarTransaccionMasivaConRegistro(idsAlumnos, monto, motivo, alcanceTexto) {
+      const loteId = 'LOTE-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+      const fechaISO = new Date().toISOString();
+
+      idsAlumnos.forEach(id => {
+        aplicarTransaccion(id, monto, motivo, loteId, fechaISO);
+      });
+
+      db.ref('historial_grupal/' + loteId).set({
+        id: loteId,
+        grupo: grupoActivo,
+        fecha: fechaISO,
+        monto: monto,
+        motivo: motivo,
+        alcance: alcanceTexto,
+        alumnosIds: idsAlumnos
+      });
+    }
+
+    function deshacerAccionGrupal(loteId) {
+      const lote = lotesGrupalesObj[loteId];
+      if (!lote) return;
+
+      const textoMonto = `${lote.monto > 0 ? '+$' : '-$'}${Math.abs(lote.monto)}`;
+      const cantidad = (lote.alumnosIds || []).length;
+      const confirmar = confirm(`¿Deseas DESHACER la acción grupal "${lote.motivo}" (${textoMonto}) en los ${cantidad} alumnos afectados?\n\nEl saldo de cada alumno volverá a su estado anterior.`);
+      if (!confirmar) return;
+
+      (lote.alumnosIds || []).forEach(idAlumno => {
+        const alumno = alumnosObj[idAlumno];
+        if (!alumno) return;
+
+        const historial = alumno.historial || [];
+        let idxEncontrado = historial.findIndex(h => h.loteId === loteId);
+        if (idxEncontrado === -1) {
+          idxEncontrado = historial.findIndex(h => h.motivo === lote.motivo && h.monto === lote.monto);
+        }
+
+        if (idxEncontrado !== -1) {
+          const nuevoSaldo = alumno.saldo - historial[idxEncontrado].monto;
+          const nuevoHistorial = historial.filter((_, idx) => idx !== idxEncontrado);
+          db.ref('alumnos/' + idAlumno).update({
+            saldo: nuevoSaldo,
+            historial: nuevoHistorial
+          });
         }
       });
 
-      if (encontrados === 0) {
-        grid.innerHTML = `<p class="vacio-msg" style="grid-column: 1/-1;">No se encontraron alumnos con "${textoBusqueda}".</p>`;
-      }
+      db.ref('historial_grupal/' + loteId).remove();
     }
 
-    // 3. Abrir ventana con el historial del alumno
-    window.abrirHistorial = function(id) {
-      alumnoSeleccionadoId = id;
-      document.getElementById('modal-historial').style.display = 'flex';
-      renderizarHistorial(id);
-    };
+    function renderHistorialGrupal() {
+      const contenedor = document.getElementById('lista-historial-grupal');
+      const lotesDelGrupo = Object.values(lotesGrupalesObj)
+        .filter(l => (l.grupo || '6A') === grupoActivo)
+        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+        .slice(0, 10);
 
-    window.cerrarModal = function() {
-      alumnoSeleccionadoId = null;
-      document.getElementById('modal-historial').style.display = 'none';
-    };
-
-    function renderizarHistorial(id) {
-      const alumno = todosLosAlumnos[id];
-      if (!alumno) return;
-
-      document.getElementById('modal-titulo').innerText = alumno.nombre;
-      document.getElementById('modal-subtitulo').innerText = `Saldo actual: $${alumno.saldo ?? 0} • Código: ${id}`;
-
-      const contenedor = document.getElementById('contenedor-historial');
-      contenedor.innerHTML = "";
-
-      const historial = alumno.historial;
-      if (!historial) {
-        contenedor.innerHTML = `<div class="vacio-msg">Este alumno aún no tiene movimientos registrados.</div>`;
+      if (lotesDelGrupo.length === 0) {
+        contenedor.innerHTML = `<p class="text-[11px] text-slate-400 italic">No hay acciones grupales recientes en 6°${grupoActivo}.</p>`;
         return;
       }
 
-      const movimientos = Object.entries(historial).reverse();
-
-      movimientos.forEach(([movId, datos]) => {
-        const monto = Number(datos.monto || 0);
-        const esPositivo = monto >= 0;
-        const concepto = datos.concepto || datos.tipo || "Movimiento";
-        const fecha = datos.fecha || "Sin fecha";
-
-        const item = document.createElement('div');
-        item.className = 'item-historial';
-        item.innerHTML = `
-          <div class="item-info">
-            <div class="item-concepto">${concepto}</div>
-            <div class="item-fecha">${fecha}</div>
-          </div>
-          <div class="item-derecha">
-            <span class="${esPositivo ? 'monto-pos' : 'monto-neg'}">
-              ${esPositivo ? '+' : ''}$${monto}
-            </span>
-            <button class="btn-deshacer" onclick="deshacerMovimiento('${id}', '${movId}', ${monto})">
-              ↩ Deshacer
-            </button>
+      contenedor.innerHTML = lotesDelGrupo.map(l => {
+        const esPos = l.monto > 0;
+        const fechaFormateada = new Date(l.fecha).toLocaleString('es-MX', {
+          day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+        });
+        return `
+          <div class="flex justify-between items-center p-2 rounded-xl bg-white border border-purple-200/80 shadow-sm gap-2">
+            <div class="truncate">
+              <p class="font-bold text-xs text-slate-800 truncate">${l.motivo}</p>
+              <p class="text-[10px] text-slate-500 font-semibold">
+                <span class="text-purple-700 font-bold">${l.alcance}</span> • ${fechaFormateada}
+              </p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="font-black text-xs font-heading ${esPos ? 'text-emerald-600' : 'text-rose-600'}">
+                ${esPos ? '+$' : '-$'}${Math.abs(l.monto)}
+              </span>
+              <button onclick="deshacerAccionGrupal('${l.id}')" class="bg-purple-50 hover:bg-rose-100 text-purple-800 hover:text-rose-700 border border-purple-200 hover:border-rose-300 px-2.5 py-1 rounded-lg text-[10px] font-black transition flex items-center gap-1">
+                <i class="fa-solid fa-rotate-left"></i> Deshacer
+              </button>
+            </div>
           </div>
         `;
-        contenedor.appendChild(item);
+      }).join('');
+    }
+
+    // --- LÓGICA EXISTENTE DE GESTIÓN ---
+    function abrirModalRegistro() {
+      document.getElementById('modal-badge-grupo').textContent = `Grupo 6°${grupoActivo}`;
+      document.getElementById('modal-registro').classList.remove('hidden');
+      document.getElementById('reg-nombre').focus();
+    }
+
+    function cerrarModalRegistro() {
+      document.getElementById('modal-registro').classList.add('hidden');
+      document.getElementById('form-registro').reset();
+      document.getElementById('reg-saldo').value = 1000;
+    }
+
+    function seleccionarGrupo(grupo) {
+      grupoActivo = grupo;
+      document.getElementById('btn-grupo-6A').className = grupo === '6A' ? 'px-4 py-2 rounded-2xl font-black text-sm font-heading shadow-md transition bg-sky-500 text-white' : 'px-4 py-2 rounded-2xl font-black text-sm font-heading transition bg-slate-100 text-slate-600 hover:bg-slate-200';
+      document.getElementById('btn-grupo-6B').className = grupo === '6B' ? 'px-4 py-2 rounded-2xl font-black text-sm font-heading shadow-md transition bg-sky-500 text-white' : 'px-4 py-2 rounded-2xl font-black text-sm font-heading transition bg-slate-100 text-slate-600 hover:bg-slate-200';
+      document.getElementById('titulo-lista-alumnos').textContent = `Alumnos 6°${grupo}`;
+      document.querySelectorAll('.grupo-label').forEach(el => el.textContent = grupo);
+      
+      selectedId = null;
+      seleccionadosSet.clear();
+      render();
+      renderHistorialGrupal();
+    }
+
+    function setAccionActiva(monto, motivo) {
+      accionActiva = { monto, motivo };
+      document.getElementById('label-accion-activa').textContent = `${motivo} (${monto > 0 ? '+$' : '-$'}${Math.abs(monto)})`;
+      document.querySelectorAll('.btn-preset').forEach(btn => btn.classList.remove('action-btn-active'));
+      event.target.classList.add('action-btn-active');
+    }
+
+    function toggleSeleccionAlumno(id, e) {
+      e.stopPropagation();
+      if (seleccionadosSet.has(id)) {
+        seleccionadosSet.delete(id);
+      } else {
+        seleccionadosSet.add(id);
+      }
+      actualizarContadoresSeleccion();
+    }
+
+    function toggleSeleccionarTodos() {
+      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
+      if (seleccionadosSet.size === alumnosDelGrupo.length) {
+        seleccionadosSet.clear();
+      } else {
+        alumnosDelGrupo.forEach(a => seleccionadosSet.add(a.id));
+      }
+      render();
+    }
+
+    function actualizarContadoresSeleccion() {
+      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
+      document.getElementById('count-seleccionados').textContent = seleccionadosSet.size;
+      document.getElementById('label-toggle-all').textContent = seleccionadosSet.size === alumnosDelGrupo.length && alumnosDelGrupo.length > 0 ? '✕ Desmarcar todos' : '✓ Seleccionar todos';
+    }
+
+    function aplicarAccionSeleccionados() {
+      if (seleccionadosSet.size === 0) return alert('Por favor selecciona al menos un alumno.');
+      const confirmacion = confirm(`¿Aplicar "${accionActiva.motivo}" (${accionActiva.monto > 0 ? '+$' : '-$'}${Math.abs(accionActiva.monto)}) a los ${seleccionadosSet.size} alumnos seleccionados?`);
+      if (!confirmacion) return;
+
+      const idsArray = Array.from(seleccionadosSet);
+      aplicarTransaccionMasivaConRegistro(idsArray, accionActiva.monto, accionActiva.motivo, `${idsArray.length} seleccionados`);
+
+      alert(`✅ Se aplicó el movimiento a ${idsArray.length} alumnos.`);
+      seleccionadosSet.clear();
+      render();
+    }
+
+    function aplicarAccionATodos() {
+      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
+      if (alumnosDelGrupo.length === 0) return alert(`No hay alumnos en 6°${grupoActivo}.`);
+
+      const confirmacion = confirm(`¿Aplicar "${accionActiva.motivo}" (${accionActiva.monto > 0 ? '+$' : '-$'}${Math.abs(accionActiva.monto)}) A TODO EL GRUPO 6°${grupoActivo} (${alumnosDelGrupo.length} alumnos)?`);
+      if (!confirmacion) return;
+
+      const idsArray = alumnosDelGrupo.map(a => a.id);
+      aplicarTransaccionMasivaConRegistro(idsArray, accionActiva.monto, accionActiva.motivo, `Todo 6°${grupoActivo} (${idsArray.length} alumnos)`);
+
+      alert(`✅ Se aplicó la transacción a todos los alumnos de 6°${grupoActivo}.`);
+      render();
+    }
+
+    function registrarAlumno(e) {
+      e.preventDefault();
+      const nombre = document.getElementById('reg-nombre').value.trim();
+      const bebe = document.getElementById('reg-bebe').value.trim();
+      const saldo = parseInt(document.getElementById('reg-saldo').value) || 0;
+      const id = 'ALU-' + Math.floor(1000 + Math.random() * 9000);
+
+      db.ref('alumnos/' + id).set({
+        id, nombre, bebe, saldo, grupo: grupoActivo,
+        deudaPrestamo: 0,
+        apoyoFormalUsado: false,
+        historial: [{ fecha: new Date().toISOString(), monto: saldo, motivo: '🎁 Dinero inicial' }]
+      });
+
+      cerrarModalRegistro();
+      selectedId = id;
+    }
+
+    function aplicarTransaccion(idAlumno, monto, motivo, loteId = null, fechaPersonalizada = null) {
+      const alumno = alumnosObj[idAlumno];
+      if (!alumno) return;
+      const nuevoSaldo = alumno.saldo + monto;
+      const historial = alumno.historial || [];
+      const entrada = {
+        fecha: fechaPersonalizada || new Date().toISOString(),
+        monto,
+        motivo
+      };
+      if (loteId) entrada.loteId = loteId;
+
+      historial.unshift(entrada);
+      db.ref('alumnos/' + idAlumno).update({ saldo: nuevoSaldo, historial });
+    }
+
+    function deshacerMovimiento(indexMovimiento) {
+      if (!selectedId) return;
+      const alumno = alumnosObj[selectedId];
+      if (!alumno || !alumno.historial || !alumno.historial[indexMovimiento]) return;
+
+      const mov = alumno.historial[indexMovimiento];
+      const textoMonto = `${mov.monto > 0 ? '+$' : '-$'}${Math.abs(mov.monto)}`;
+      
+      const confirmar = confirm(`¿Deseas deshacer y eliminar "${mov.motivo}" (${textoMonto})?\n\nEl saldo de ${alumno.nombre} se ajustará automáticamente.`);
+      if (!confirmar) return;
+
+      const nuevoSaldo = alumno.saldo - mov.monto;
+      const nuevoHistorial = alumno.historial.filter((_, idx) => idx !== indexMovimiento);
+
+      db.ref('alumnos/' + selectedId).update({
+        saldo: nuevoSaldo,
+        historial: nuevoHistorial
       });
     }
 
-    // 4. Función para deshacer un movimiento equivocado y devolver el saldo
-    window.deshacerMovimiento = async function(alumnoId, movId, montoOriginal) {
-      const confirmar = confirm(`¿Seguro que deseas deshacer este movimiento de $${montoOriginal}? El saldo del alumno se ajustará automáticamente.`);
-      if (!confirmar) return;
+    function aplicarAccionActivaManual() {
+      if (!selectedId) return;
+      aplicarTransaccion(selectedId, accionActiva.monto, accionActiva.motivo);
+    }
 
-      const alumno = todosLosAlumnos[alumnoId];
-      const saldoCorregido = (alumno.saldo || 0) - montoOriginal;
+    function eliminarAlumno() {
+      if (!selectedId || !confirm('¿Eliminar a este alumno de la nube?')) return;
+      db.ref('alumnos/' + selectedId).remove();
+      seleccionadosSet.delete(selectedId);
+      selectedId = null;
+    }
 
-      try {
-        await update(ref(db, `alumnos/${alumnoId}`), { saldo: saldoCorregido });
-        await remove(ref(db, `alumnos/${alumnoId}/historial/${movId}`));
-      } catch (error) {
-        alert("Hubo un error al deshacer el movimiento en Firebase.");
-        console.error(error);
+    function imprimirListaCodigos() {
+      const listaAlumnos = Object.values(alumnosObj)
+        .filter(a => (a.grupo || '6A') === grupoActivo)
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+      if (listaAlumnos.length === 0) {
+        return alert(`No hay alumnos registrados en el grupo 6°${grupoActivo} para imprimir.`);
       }
-    };
+
+      const ventanaImpresion = window.open('', '_blank');
+      const fechaHoy = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      const filasHTML = listaAlumnos.map((a, index) => `
+        <tr>
+          <td style="text-align: center; font-weight: bold;">${index + 1}</td>
+          <td>${a.nombre}</td>
+          <td>${a.bebe}</td>
+          <td style="font-family: monospace; font-size: 14px; font-weight: bold; text-align: center; background: #f1f5f9;">${a.id}</td>
+          <td style="text-align: right; font-weight: bold;">$${a.saldo}</td>
+        </tr>
+      `).join('');
+
+      ventanaImpresion.document.write(`
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <title>Lista de Códigos - Grupo 6°${grupoActivo}</title>
+          <style>
+            body { font-family: Arial, sans-serif; color: #1e293b; padding: 25px; }
+            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0284c7; padding-bottom: 12px; margin-bottom: 20px; }
+            .header h1 { margin: 0; font-size: 20px; color: #0284c7; }
+            .header p { margin: 4px 0 0 0; font-size: 12px; color: #64748b; }
+            table { width: 100%; border-collapse: collapse; font-size: 13px; }
+            th, td { border: 1px solid #cbd5e1; padding: 9px 12px; }
+            th { background-color: #f0f9ff; color: #0369a1; text-align: left; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1>¡Mi Bebé y Yo! — Códigos de Acceso</h1>
+              <p>Proyecto: Maternidad y Paternidad Responsable | <b>Grupo 6°${grupoActivo}</b></p>
+            </div>
+            <div style="text-align: right; font-size: 12px; color: #64748b;">
+              <b>Fecha:</b> ${fechaHoy}<br>
+              <b>Total alumnos:</b> ${listaAlumnos.length}
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px; text-align: center;">#</th>
+                <th>Nombre del Alumno</th>
+                <th>Nombre del Bebé</th>
+                <th style="width: 120px; text-align: center;">Código ID</th>
+                <th style="width: 100px; text-align: right;">Saldo Actual</th>
+              </tr>
+            </thead>
+            <tbody>${filasHTML}</tbody>
+          </table>
+          <script>window.onload = function() { window.print(); };<\/script>
+        </body>
+        </html>
+      `);
+      ventanaImpresion.document.close();
+    }
+
+    function render() {
+      const listaAlumnos = Object.values(alumnosObj)
+        .filter(a => (a.grupo || '6A') === grupoActivo)
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+      document.getElementById('count-alumnos').textContent = listaAlumnos.length;
+
+      const lista = document.getElementById('lista-alumnos');
+      if (listaAlumnos.length === 0) {
+        lista.innerHTML = `<p class="text-xs text-slate-400 italic">No hay alumnos registrados en 6°${grupoActivo}.</p>`;
+      } else {
+        lista.innerHTML = listaAlumnos.map(a => {
+          const isChecked = seleccionadosSet.has(a.id);
+          const isSelected = a.id === selectedId;
+          const esNegativo = a.saldo < 0;
+          const badgeSaldoClass = esNegativo
+            ? 'font-black text-xs text-rose-700 bg-rose-100 px-2 py-1 rounded-lg border border-rose-300 font-heading shrink-0'
+            : 'font-black text-xs text-indigo-600 bg-white px-2 py-1 rounded-lg border border-indigo-200 font-heading shrink-0';
+
+          return `
+            <div onclick="selectedId='${a.id}'; render();" class="p-2.5 rounded-2xl border-2 cursor-pointer transition flex items-center justify-between gap-2 ${isSelected ? 'bg-indigo-100 border-indigo-400 text-indigo-900 font-bold' : 'bg-white hover:bg-slate-50 border-slate-100'}">
+              <div class="flex items-center gap-2 overflow-hidden">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="toggleSeleccionAlumno('${a.id}', event)" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                <div class="truncate">
+                  <p class="font-bold text-xs truncate">${esNegativo ? '🆘 ' : ''}${a.nombre}</p>
+                  <p class="text-[10px] text-slate-400 font-mono">${a.id}</p>
+                </div>
+              </div>
+              <span class="${badgeSaldoClass}">${esNegativo ? '-$' + Math.abs(a.saldo) : '$' + a.saldo}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      actualizarContadoresSeleccion();
+
+      const alumno = alumnosObj[selectedId];
+      if (alumno) {
+        document.getElementById('no-selected').classList.add('hidden');
+        document.getElementById('selected-info').classList.remove('hidden');
+        document.getElementById('info-nombre').textContent = alumno.nombre;
+        document.getElementById('info-bebe').textContent = alumno.bebe;
+        document.getElementById('info-grupo').textContent = `6°${alumno.grupo || '6A'}`;
+        document.getElementById('info-id').textContent = alumno.id;
+
+        const saldoEl = document.getElementById('info-saldo');
+        if (alumno.saldo < 0) {
+          saldoEl.textContent = `-$${Math.abs(alumno.saldo)}`;
+          saldoEl.className = 'text-3xl font-black text-rose-600 font-heading';
+        } else {
+          saldoEl.textContent = `$${alumno.saldo}`;
+          saldoEl.className = 'text-3xl font-black text-indigo-600 font-heading';
+        }
+
+        // Mostrar u ocultar panel de rescate financiero (si saldo < 0 o tiene deuda pendiente)
+        const panelRescate = document.getElementById('panel-rescate-financiero');
+        const deudaPendiente = alumno.deudaPrestamo || 0;
+        if (alumno.saldo < 0 || deudaPendiente > 0) {
+          panelRescate.classList.remove('hidden');
+
+          // Control de alerta de deuda por préstamo
+          const alertaDeuda = document.getElementById('alerta-deuda-activa');
+          if (deudaPendiente > 0) {
+            alertaDeuda.classList.remove('hidden');
+            document.getElementById('monto-deuda-pendiente').textContent = `$${deudaPendiente}`;
+            document.getElementById('btn-monto-cobro').textContent = deudaPendiente;
+          } else {
+            alertaDeuda.classList.add('hidden');
+          }
+
+          // Control de uso único del Programa de Apoyo Formal
+          const btnApoyo = document.getElementById('btn-programa-apoyo');
+          const tituloApoyo = document.getElementById('titulo-programa-apoyo');
+          const descApoyo = document.getElementById('desc-programa-apoyo');
+          if (alumno.apoyoFormalUsado) {
+            btnApoyo.disabled = true;
+            btnApoyo.className = 'p-3 rounded-xl bg-slate-100 border-2 border-slate-200 text-left opacity-60 cursor-not-allowed flex flex-col justify-between gap-1';
+            tituloApoyo.textContent = '3. 🔒 Apoyo Ya Utilizado';
+            tituloApoyo.className = 'text-xs font-black text-slate-600';
+            descApoyo.textContent = 'Este alumno ya usó su apoyo único de $500.';
+          } else {
+            btnApoyo.disabled = false;
+            btnApoyo.className = 'p-3 rounded-xl bg-white hover:bg-emerald-50 border-2 border-emerald-300 text-left transition shadow-sm flex flex-col justify-between gap-1';
+            tituloApoyo.textContent = '3. ✉️ Apoyo Formal (+$500)';
+            tituloApoyo.className = 'text-xs font-black text-emerald-900';
+            descApoyo.innerHTML = 'Carta formal completa aprobada. <b>(1 solo uso)</b>';
+          }
+        } else {
+          panelRescate.classList.add('hidden');
+        }
+
+        const historialHTML = (alumno.historial || []).map((h, idx) => {
+          const esPos = h.monto > 0;
+          const fechaFormateada = new Date(h.fecha).toLocaleString('es-MX', {
+            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+          });
+          return `
+            <div class="flex justify-between items-center p-2.5 rounded-xl border ${esPos ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950' : 'bg-rose-50/70 border-rose-200 text-rose-950'}">
+              <div class="truncate pr-2">
+                <p class="font-bold text-xs truncate">${h.motivo}</p>
+                <p class="text-[10px] text-slate-400 font-semibold">${fechaFormateada}</p>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <span class="font-black text-xs font-heading ${esPos ? 'text-emerald-600' : 'text-rose-600'}">
+                  ${esPos ? '+$' : '-$'}${Math.abs(h.monto)}
+                </span>
+                <button onclick="deshacerMovimiento(${idx})" title="Eliminar y revertir este movimiento" class="bg-white hover:bg-rose-100 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-300 px-2 py-1 rounded-lg text-[10px] font-bold transition flex items-center gap-1 shadow-sm">
+                  <i class="fa-solid fa-rotate-left"></i> Deshacer
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('info-historial').innerHTML = historialHTML || `<p class="text-xs text-slate-400 italic">Sin movimientos registrados.</p>`;
+      } else {
+        document.getElementById('no-selected').classList.remove('hidden');
+        document.getElementById('selected-info').classList.add('hidden');
+      }
+    }
   </script>
 </body>
 </html>
