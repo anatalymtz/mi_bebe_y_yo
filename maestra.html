@@ -3,443 +3,242 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Docente - Mi Bebé y Yo</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <title>Panel de Maestra - Mi Bebé y Yo</title>
   <style>
-    body {
-      font-family: 'Nunito', sans-serif;
-      background-color: #f0f9ff;
-      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px), radial-gradient(#cbd5e1 1.2px, #f0f9ff 1.2px);
-      background-size: 48px 48px;
-      background-position: 0 0, 24px 24px;
+    :root {
+      --verde-bg: #e6f4ea;
+      --verde-texto: #137333;
+      --verde-borde: #a8dab5;
+      --rojo-bg: #fce8e6;
+      --rojo-texto: #c5221f;
+      --rojo-borde: #f5c2c0;
+      --azul-primario: #2563eb;
     }
-    .font-heading { font-family: 'Fredoka', cursive; }
-    .card-playful {
-      background: white;
-      border-radius: 1.5rem;
-      box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.15), 0 8px 10px -6px rgba(14, 165, 233, 0.1);
-      border: 3px solid #e0f2fe;
-    }
-    .action-btn-active {
-      transform: scale(1.02);
-      box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.4);
-      font-weight: 900 !important;
-    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f1f5f9; margin: 0; padding: 20px; color: #1e293b; }
+    .contenedor { max-width: 900px; margin: 0 auto; }
+    
+    .header { background: white; padding: 20px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 15px; }
+    .header h1 { margin: 0; font-size: 1.5rem; color: #0f172a; }
+    
+    /* Buscador */
+    .buscador-box { flex: 1; min-width: 250px; }
+    .buscador-input { width: 100%; padding: 12px 16px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 1rem; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+    .buscador-input:focus { border-color: var(--azul-primario); }
+
+    /* Lista de Alumnos */
+    .grid-alumnos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+    .card-alumno { background: white; border-radius: 16px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between; }
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .badge { background: #e2e8f0; color: #475569; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 8px; }
+    .nombre-alumno { font-size: 1.15rem; font-weight: 700; margin: 6px 0 2px 0; }
+    .bebe-alumno { font-size: 0.85rem; color: #64748b; }
+    .saldo-alumno { font-size: 1.6rem; font-weight: 800; color: #0f172a; margin: 12px 0; }
+    
+    .btn-historial { width: 100%; padding: 10px; background: #eff6ff; color: var(--azul-primario); border: 1.5px solid #bfdbfe; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+    .btn-historial:hover { background: #dbeafe; }
+
+    /* Ventana Modal de Historial */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); justify-content: center; align-items: center; z-index: 1000; padding: 15px; box-sizing: border-box; }
+    .modal-contenido { background: white; width: 100%; max-width: 550px; max-height: 85vh; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px; }
+    .modal-header h2 { margin: 0; font-size: 1.3rem; }
+    .btn-cerrar { background: #f1f5f9; border: none; font-size: 1.2rem; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-weight: bold; }
+    
+    .lista-historial { overflow-y: auto; flex: 1; padding-right: 5px; }
+    .item-historial { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 8px; background: #f8fafc; }
+    .item-info { text-align: left; }
+    .item-concepto { font-weight: 700; font-size: 0.95rem; }
+    .item-fecha { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
+    
+    .item-derecha { display: flex; align-items: center; gap: 10px; }
+    .monto-pos { color: var(--verde-texto); font-weight: 800; font-size: 1rem; }
+    .monto-neg { color: var(--rojo-texto); font-weight: 800; font-size: 1rem; }
+    
+    .btn-deshacer { background: #fff1f2; color: #e11d48; border: 1px solid #fecdd3; padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+    .btn-deshacer:hover { background: #ffe4e6; }
+    .vacio-msg { text-align: center; color: #94a3b8; padding: 30px 0; }
   </style>
 </head>
-<body class="min-h-screen text-slate-700 pb-12">
+<body>
 
-  <!-- MODAL DE AUTENTICACIÓN INICIAL -->
-  <div id="auth-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="card-playful p-6 max-w-sm w-full space-y-4 text-center border-t-8 border-t-indigo-500 shadow-2xl">
-      <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner">
-        <i class="fa-solid fa-user-gear"></i>
-      </div>
+  <div class="contenedor">
+    <!-- Encabezado y Buscador -->
+    <div class="header">
       <div>
-        <h3 class="text-xl font-black font-heading text-slate-800">Panel de Profesora</h3>
-        <p class="text-xs text-slate-500">Ingresa la contraseña para acceder al sistema.</p>
+        <h1>👶 Mi Bebé y Yo • Panel Maestra</h1>
+        <small style="color: #64748b;">Sincronizado en tiempo real con Firebase</small>
       </div>
-      <form onsubmit="validarAcceso(event)" class="space-y-3">
-        <input type="password" id="admin-pass-input" placeholder="Contraseña de Maestra" required class="w-full p-3 border-2 border-indigo-200 rounded-2xl text-center font-bold text-sm focus:ring-4 focus:ring-indigo-100 outline-none">
-        <p id="pass-error" class="text-xs text-rose-500 font-bold hidden">⚠️ Contraseña incorrecta</p>
-        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-2xl text-xs font-heading shadow-md transition active:scale-95">
-          Ingresar al Panel
-        </button>
-      </form>
+      <div class="buscador-box">
+        <input type="text" id="buscador" class="buscador-input" placeholder="🔍 Buscar alumno por nombre..." oninput="filtrarAlumnos()">
+      </div>
+    </div>
+
+    <!-- Tarjetas de alumnos -->
+    <div class="grid-alumnos" id="grid-alumnos">
+      <p>Cargando lista de alumnos...</p>
     </div>
   </div>
 
-  <!-- PANEL DE MAESTRA (OCULTO HASTA VALIDAR) -->
-  <div id="admin-panel" class="hidden">
-    <header class="bg-gradient-to-r from-sky-400 via-indigo-400 to-pink-400 text-white shadow-lg p-5 rounded-b-3xl relative overflow-hidden">
-      <div class="max-w-4xl mx-auto flex justify-between items-center relative z-10">
-        <div class="flex items-center space-x-3">
-          <div class="bg-white/30 backdrop-blur-md p-3 rounded-2xl shadow-inner">
-            <i class="fa-solid fa-baby text-3xl text-yellow-300"></i>
-          </div>
-          <div>
-            <h1 class="text-2xl font-black font-heading tracking-wide">¡Mi Bebé y Yo!</h1>
-            <p class="text-xs font-bold text-sky-100">Panel Docente de Administración</p>
-          </div>
-        </div>
-        <button onclick="toggleNfcScanner()" id="btn-nfc-main" class="bg-yellow-400 hover:bg-yellow-300 text-amber-950 font-black px-4 py-2.5 rounded-2xl text-xs sm:text-sm flex items-center shadow-md transition transform active:scale-95 border-2 border-yellow-200">
-          <i class="fa-solid fa-wifi mr-2 text-base"></i> <span id="nfc-btn-text">Escanear NFC</span>
-        </button>
-      </div>
-    </header>
-
-    <main class="max-w-4xl mx-auto p-4 space-y-6 mt-4">
-      <div id="nfc-status-banner" class="hidden p-4 rounded-2xl bg-amber-400 border-2 border-amber-300 text-amber-950 text-xs font-bold flex items-center justify-between shadow-lg">
-        <span id="nfc-status-text"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Buscando tarjeta NFC...</span>
-        <button onclick="stopNfcScanner()" class="bg-amber-950 text-white px-3 py-1 rounded-xl text-xs">Detener</button>
-      </div>
-
-      <div class="card-playful p-4 border-t-8 border-t-sky-500 flex flex-wrap justify-between items-center gap-3">
+  <!-- Ventana Emergente (Modal) para Historial y Deshacer -->
+  <div class="modal-overlay" id="modal-historial">
+    <div class="modal-contenido">
+      <div class="modal-header">
         <div>
-          <h3 class="text-sm font-black font-heading text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-users text-sky-500"></i> Seleccionar Grupo Activo:
-          </h3>
+          <h2 id="modal-titulo">Historial</h2>
+          <small id="modal-subtitulo" style="color: #64748b;"></small>
         </div>
-        <div class="flex gap-2">
-          <button id="btn-grupo-6A" onclick="seleccionarGrupo('6A')" class="px-5 py-2.5 rounded-2xl font-black text-sm font-heading shadow-md transition bg-sky-500 text-white">
-            🏫 Grupo 6°A
-          </button>
-          <button id="btn-grupo-6B" onclick="seleccionarGrupo('6B')" class="px-5 py-2.5 rounded-2xl font-black text-sm font-heading transition bg-slate-100 text-slate-600 hover:bg-slate-200">
-            🏫 Grupo 6°B
-          </button>
-        </div>
+        <button class="btn-cerrar" onclick="cerrarModal()">✕</button>
       </div>
-
-      <!-- PRESETS DE ACCIONES -->
-      <div class="card-playful p-5 border-t-8 border-t-amber-400 space-y-4">
-        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-          <h2 class="text-sm font-black font-heading text-slate-800">Acción Activa seleccionada:</h2>
-          <span id="label-accion-activa" class="bg-indigo-100 text-indigo-900 text-xs px-3 py-1 rounded-full font-black font-mono border border-indigo-200">
-            Actividad terminada (+$100)
-          </span>
-        </div>
-
-        <div class="space-y-2">
-          <p class="text-[11px] font-black text-emerald-600 uppercase">🌟 Ganancias e Ingresos Extra (+)</p>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            <button onclick="setAccionActiva(100, 'Actividad terminada')" class="btn-preset action-btn-active bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">⭐ Actividad (+$100)</button>
-            <button onclick="setAccionActiva(200, 'Ayudante')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">🙋 Ayudante (+$200)</button>
-            <button onclick="setAccionActiva(200, 'DIF')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">🏛️ DIF (+$200)</button>
-            <button onclick="setAccionActiva(300, 'Trabajo excelente del día')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">🏆 Excelente (+$300)</button>
-            <button onclick="setAccionActiva(200, 'Regalo')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">🎁 Regalo (+$200)</button>
-            <button onclick="setAccionActiva(300, 'Regalo')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">🎁 Regalo (+$300)</button>
-            <button onclick="setAccionActiva(100, 'Encontró dinero')" class="btn-preset bg-emerald-50 text-emerald-800 p-2.5 rounded-xl font-bold border border-emerald-200">💵 Encontró (+$100)</button>
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <p class="text-[11px] font-black text-rose-600 uppercase">💸 Gastos e Imprevistos (-)</p>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-            <button onclick="setAccionActiva(-1000, 'Maltrato infantil')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🚨 Maltrato (-$1000)</button>
-            <button onclick="setAccionActiva(-500, 'Abandono')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">⚠️ Abandono (-$500)</button>
-            <button onclick="setAccionActiva(-300, 'Descuido')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">😭 Descuido (-$300)</button>
-            <button onclick="setAccionActiva(-400, 'Cuidar bebés ajenos')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🚼 Bebés ajenos (-$400)</button>
-            <button onclick="setAccionActiva(-200, 'Comida y Pañal')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🍼🧷 Comida/Pañal (-$200)</button>
-            <button onclick="setAccionActiva(-500, 'Consulta y Medicina')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🩺 Salud (-$500)</button>
-            <button onclick="setAccionActiva(-500, 'Guardería')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🧸 Guardería (-$500)</button>
-            <button onclick="setAccionActiva(-200, 'Leche especial')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🍼 Leche especial (-$200)</button>
-            <button onclick="setAccionActiva(-100, 'Perdió dinero')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">💸 Perdió dinero (-$100)</button>
-            <button onclick="setAccionActiva(-50, 'Juguete nuevo')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">🧸 Juguete (-$50)</button>
-            <button onclick="setAccionActiva(-100, 'Ropa nueva')" class="btn-preset bg-rose-50 text-rose-800 p-2.5 rounded-xl font-bold border border-rose-200">👕 Ropa (-$100)</button>
-          </div>
-        </div>
+      
+      <div class="lista-historial" id="contenedor-historial">
+        <!-- Aquí se cargan los movimientos -->
       </div>
-
-      <!-- BOTONES DE APLICACIÓN MASIVA Y MULTISELECCIÓN -->
-      <div class="card-playful p-4 border-t-8 border-t-purple-500 bg-purple-50/40 space-y-3">
-        <h3 class="text-xs font-black uppercase text-purple-900 flex items-center gap-2">
-          <i class="fa-solid fa-list-check text-purple-600 text-sm"></i> Operaciones Masivas (Varios / Todos)
-        </h3>
-        <div class="flex flex-wrap gap-2">
-          <button onclick="aplicarAccionSeleccionados()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-black py-2.5 px-4 rounded-xl shadow-md transition font-heading flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-user-check"></i> Aplicar a Seleccionados (<span id="count-seleccionados">0</span>)
-          </button>
-          <button onclick="aplicarAccionATodos()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black py-2.5 px-4 rounded-xl shadow-md transition font-heading flex items-center justify-center gap-1.5">
-            <i class="fa-solid fa-users"></i> Aplicar a Todo 6°<span class="grupo-label">A</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="card-playful p-5 border-t-8 border-t-teal-400">
-        <h2 class="text-base font-black font-heading mb-3 text-slate-700 flex justify-between items-center">
-          <span><i class="fa-solid fa-user-plus mr-2 text-teal-500"></i> Registrar Nuevo Alumno</span>
-          <span id="badge-grupo-registro" class="text-xs bg-teal-100 text-teal-800 font-bold px-2.5 py-1 rounded-lg">Asignando a 6°A</span>
-        </h2>
-        <form id="form-registro" onsubmit="registrarAlumno(event)" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <input type="text" id="reg-nombre" placeholder="Nombre Alumno" required class="p-3 border-2 border-slate-100 rounded-xl text-xs font-bold outline-none">
-          <input type="text" id="reg-bebe" placeholder="Nombre del Bebé" required class="p-3 border-2 border-slate-100 rounded-xl text-xs font-bold outline-none">
-          <input type="number" id="reg-saldo" placeholder="Dinero Inicial ($)" value="1000" required class="p-3 border-2 border-slate-100 rounded-xl text-xs font-bold outline-none">
-          <button type="submit" class="bg-teal-500 hover:bg-teal-600 text-white font-black py-3 rounded-xl text-xs font-heading transition">
-            + Guardar Alumno
-          </button>
-        </form>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- LISTA DE ALUMNOS CON CHECKBOXES -->
-        <div class="card-playful p-4 md:col-span-1 border-t-8 border-t-indigo-400 space-y-3">
-          <div class="flex justify-between items-center">
-            <h3 class="font-black text-sm text-slate-700 flex items-center gap-1">
-              <span id="titulo-lista-alumnos">Alumnos 6°A</span>
-              <span id="count-alumnos" class="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
-            </h3>
-            <button onclick="toggleSeleccionarTodos()" class="text-[11px] font-bold text-indigo-600 hover:underline">
-              <span id="label-toggle-all">✓ Seleccionar todos</span>
-            </button>
-          </div>
-          <div id="lista-alumnos" class="space-y-2 max-h-[350px] overflow-y-auto pr-1"></div>
-        </div>
-
-        <!-- DETALLE DEL ALUMNO SELECCIONADO -->
-        <div class="card-playful p-5 md:col-span-2 border-t-8 border-t-pink-400">
-          <div id="detalle-alumno-container">
-            <div id="no-selected" class="py-12 text-center text-slate-400">
-              <i class="fa-solid fa-hand-pointer text-4xl mb-2 opacity-30 text-indigo-400"></i>
-              <p class="text-xs font-bold">Selecciona un alumno para operar en detalle</p>
-            </div>
-
-            <div id="selected-info" class="hidden space-y-4">
-              <div class="flex justify-between items-start border-b border-slate-100 pb-3">
-                <div>
-                  <h3 id="info-nombre" class="text-xl font-black font-heading text-slate-800">---</h3>
-                  <p class="text-xs text-slate-500">Bebé: <b id="info-bebe" class="text-slate-700">---</b> | Grupo: <b id="info-grupo" class="text-indigo-600 font-mono">---</b></p>
-                  <p class="text-xs text-slate-400">Código ID: <span id="info-id" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-[11px] font-bold">---</span></p>
-                </div>
-                <div class="text-right">
-                  <span class="text-[10px] font-bold text-slate-400 uppercase block">Saldo Actual</span>
-                  <span id="info-saldo" class="text-3xl font-black text-indigo-600 font-heading">$0</span>
-                </div>
-              </div>
-
-              <div class="space-y-3">
-                <button onclick="aplicarAccionActivaManual()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black p-3 rounded-xl shadow-md transition font-heading">
-                  ⚡ Aplicar Acción Activa a este Alumno
-                </button>
-                <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
-                  <button onclick="vincularNFC()" class="bg-slate-800 text-white text-xs font-black px-3.5 py-2.5 rounded-xl flex items-center shadow-md">
-                    <i class="fa-solid fa-nfc-symbol mr-2 text-yellow-400"></i> Grabar Tarjeta NFC
-                  </button>
-                  <button onclick="eliminarAlumno()" class="text-xs text-rose-500 font-bold hover:underline">Eliminar Alumno</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
+    </div>
   </div>
 
-  <script>
-    const FIREBASE_URL = "https://mi-bebe-y-yo-233db-default-rtdb.firebaseio.com/";
-    const PASSWORD_MAESTRA = "1234"; // 🔒 Cambia la contraseña aquí
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    firebase.initializeApp({ databaseURL: FIREBASE_URL });
-    const db = firebase.database();
+    const firebaseConfig = {
+      databaseURL: "https://mi-bebe-y-yo-233db-default-rtdb.firebaseio.com"
+    };
 
-    let alumnosObj = {};
-    let grupoActivo = '6A';
-    let selectedId = null;
-    let seleccionadosSet = new Set();
-    let nfcReader = null;
-    let accionActiva = { monto: 100, motivo: 'Actividad terminada' };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    function validarAcceso(e) {
-      e.preventDefault();
-      const inputPass = document.getElementById('admin-pass-input').value;
-      if (inputPass === PASSWORD_MAESTRA) {
-        document.getElementById('auth-overlay').classList.add('hidden');
-        document.getElementById('admin-panel').classList.remove('hidden');
-        iniciarFirebase();
-      } else {
-        document.getElementById('pass-error').classList.remove('hidden');
-      }
-    }
+    let todosLosAlumnos = {};
+    let alumnoSeleccionadoId = null;
 
-    function iniciarFirebase() {
-      db.ref('alumnos').on('value', snapshot => {
-        alumnosObj = snapshot.val() || {};
-        render();
-      });
-    }
-
-    function seleccionarGrupo(grupo) {
-      grupoActivo = grupo;
-      document.getElementById('btn-grupo-6A').className = grupo === '6A' ? 'px-5 py-2.5 rounded-2xl font-black text-sm font-heading shadow-md transition bg-sky-500 text-white' : 'px-5 py-2.5 rounded-2xl font-black text-sm font-heading transition bg-slate-100 text-slate-600 hover:bg-slate-200';
-      document.getElementById('btn-grupo-6B').className = grupo === '6B' ? 'px-5 py-2.5 rounded-2xl font-black text-sm font-heading shadow-md transition bg-sky-500 text-white' : 'px-5 py-2.5 rounded-2xl font-black text-sm font-heading transition bg-slate-100 text-slate-600 hover:bg-slate-200';
-      document.getElementById('badge-grupo-registro').textContent = `Asignando a 6°${grupo}`;
-      document.getElementById('titulo-lista-alumnos').textContent = `Alumnos 6°${grupo}`;
-      document.querySelectorAll('.grupo-label').forEach(el => el.textContent = grupo);
+    // 1. Escuchar cambios en tiempo real desde Firebase
+    const alumnosRef = ref(db, 'alumnos');
+    onValue(alumnosRef, (snapshot) => {
+      todosLosAlumnos = snapshot.val() || {};
+      renderizarAlumnos();
       
-      selectedId = null;
-      seleccionadosSet.clear();
-      render();
-    }
-
-    function setAccionActiva(monto, motivo) {
-      accionActiva = { monto, motivo };
-      document.getElementById('label-accion-activa').textContent = `${motivo} (${monto > 0 ? '+$' : '-$'}${Math.abs(monto)})`;
-      document.querySelectorAll('.btn-preset').forEach(btn => btn.classList.remove('action-btn-active'));
-      event.target.classList.add('action-btn-active');
-    }
-
-    function toggleSeleccionAlumno(id, e) {
-      e.stopPropagation();
-      if (seleccionadosSet.has(id)) {
-        seleccionadosSet.delete(id);
-      } else {
-        seleccionadosSet.add(id);
+      // Si el modal de historial está abierto, actualizarlo en vivo
+      if (alumnoSeleccionadoId && todosLosAlumnos[alumnoSeleccionadoId]) {
+        renderizarHistorial(alumnoSeleccionadoId);
       }
-      actualizarContadoresSeleccion();
-    }
+    });
 
-    function toggleSeleccionarTodos() {
-      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
-      if (seleccionadosSet.size === alumnosDelGrupo.length) {
-        seleccionadosSet.clear();
-      } else {
-        alumnosDelGrupo.forEach(a => seleccionadosSet.add(a.id));
-      }
-      render();
-    }
+    // 2. Mostrar tarjetas de alumnos (aplicando filtro de búsqueda)
+    window.filtrarAlumnos = function() {
+      renderizarAlumnos();
+    };
 
-    function actualizarContadoresSeleccion() {
-      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
-      document.getElementById('count-seleccionados').textContent = seleccionadosSet.size;
-      document.getElementById('label-toggle-all').textContent = seleccionadosSet.size === alumnosDelGrupo.length && alumnosDelGrupo.length > 0 ? '✕ Desmarcar todos' : '✓ Seleccionar todos';
-    }
+    function renderizarAlumnos() {
+      const grid = document.getElementById('grid-alumnos');
+      const textoBusqueda = document.getElementById('buscador').value.toLowerCase().trim();
+      grid.innerHTML = "";
 
-    function aplicarAccionSeleccionados() {
-      if (seleccionadosSet.size === 0) return alert('Por favor selecciona al menos un alumno.');
-      const confirmacion = confirm(`¿Aplicar "${accionActiva.motivo}" (${accionActiva.monto > 0 ? '+$' : '-$'}${Math.abs(accionActiva.monto)}) a los ${seleccionadosSet.size} alumnos seleccionados?`);
-      if (!confirmacion) return;
+      const ids = Object.keys(todosLosAlumnos);
+      let encontrados = 0;
 
-      seleccionadosSet.forEach(id => {
-        aplicarTransaccion(id, accionActiva.monto, accionActiva.motivo);
-      });
+      ids.forEach(id => {
+        const alumno = todosLosAlumnos[id];
+        const nombre = (alumno.nombre || "").toLowerCase();
+        const bebe = (alumno.bebe || "").toLowerCase();
 
-      alert(`✅ Se aplicó el movimiento a ${seleccionadosSet.size} alumnos.`);
-      seleccionadosSet.clear();
-      render();
-    }
-
-    function aplicarAccionATodos() {
-      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
-      if (alumnosDelGrupo.length === 0) return alert(`No hay alumnos en 6°${grupoActivo}.`);
-
-      const confirmacion = confirm(`¿Aplicar "${accionActiva.motivo}" (${accionActiva.monto > 0 ? '+$' : '-$'}${Math.abs(accionActiva.monto)}) A TODO EL GRUPO 6°${grupoActivo} (${alumnosDelGrupo.length} alumnos)?`);
-      if (!confirmacion) return;
-
-      alumnosDelGrupo.forEach(a => {
-        aplicarTransaccion(a.id, accionActiva.monto, accionActiva.motivo);
-      });
-
-      alert(`✅ Se aplicó la transacción a todos los alumnos de 6°${grupoActivo}.`);
-      render();
-    }
-
-    function registrarAlumno(e) {
-      e.preventDefault();
-      const nombre = document.getElementById('reg-nombre').value.trim();
-      const bebe = document.getElementById('reg-bebe').value.trim();
-      const saldo = parseInt(document.getElementById('reg-saldo').value) || 0;
-      const id = 'ALU-' + Math.floor(1000 + Math.random() * 9000);
-
-      db.ref('alumnos/' + id).set({
-        id, nombre, bebe, saldo, grupo: grupoActivo,
-        historial: [{ fecha: new Date().toISOString(), monto: saldo, motivo: '🎁 Dinero inicial' }]
-      });
-
-      document.getElementById('form-registro').reset();
-      selectedId = id;
-    }
-
-    function aplicarTransaccion(idAlumno, monto, motivo) {
-      const alumno = alumnosObj[idAlumno];
-      if (!alumno) return;
-      const nuevoSaldo = alumno.saldo + monto;
-      const historial = alumno.historial || [];
-      historial.unshift({ fecha: new Date().toISOString(), monto, motivo });
-
-      db.ref('alumnos/' + idAlumno).update({ saldo: nuevoSaldo, historial });
-    }
-
-    function aplicarAccionActivaManual() {
-      if (!selectedId) return;
-      aplicarTransaccion(selectedId, accionActiva.monto, accionActiva.motivo);
-      alert(`¡Transacción aplicada exitosamente!`);
-    }
-
-    function eliminarAlumno() {
-      if (!selectedId || !confirm('¿Eliminar a este alumno de la nube?')) return;
-      db.ref('alumnos/' + selectedId).remove();
-      seleccionadosSet.delete(selectedId);
-      selectedId = null;
-    }
-
-    function render() {
-      const listaAlumnos = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
-      document.getElementById('count-alumnos').textContent = listaAlumnos.length;
-
-      const lista = document.getElementById('lista-alumnos');
-      if (listaAlumnos.length === 0) {
-        lista.innerHTML = `<p class="text-xs text-slate-400 italic">No hay alumnos registrados en 6°${grupoActivo}.</p>`;
-      } else {
-        lista.innerHTML = listaAlumnos.map(a => {
-          const isChecked = seleccionadosSet.has(a.id);
-          const isSelected = a.id === selectedId;
-          return `
-            <div onclick="selectedId='${a.id}'; render();" class="p-2.5 rounded-2xl border-2 cursor-pointer transition flex items-center justify-between gap-2 ${isSelected ? 'bg-indigo-100 border-indigo-400 text-indigo-900 font-bold' : 'bg-white hover:bg-slate-50 border-slate-100'}">
-              <div class="flex items-center gap-2 overflow-hidden">
-                <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="toggleSeleccionAlumno('${a.id}', event)" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
-                <div class="truncate">
-                  <p class="font-bold text-xs truncate">${a.nombre}</p>
-                  <p class="text-[10px] text-slate-400 font-mono">${a.id}</p>
-                </div>
+        if (nombre.includes(textoBusqueda) || bebe.includes(textoBusqueda) || id.toLowerCase().includes(textoBusqueda)) {
+          encontrados++;
+          const card = document.createElement('div');
+          card.className = 'card-alumno';
+          card.innerHTML = `
+            <div>
+              <div class="card-top">
+                <span class="badge">Grupo ${alumno.grupo || '-'}</span>
+                <span class="badge">${id}</span>
               </div>
-              <span class="font-black text-xs text-indigo-600 bg-white px-2 py-1 rounded-lg border border-indigo-200 font-heading shrink-0">$${a.saldo}</span>
+              <div class="nombre-alumno">${alumno.nombre || 'Sin nombre'}</div>
+              <div class="bebe-alumno">👶 Bebé: ${alumno.bebe || 'Sin asignar'}</div>
+            </div>
+            <div>
+              <div class="saldo-alumno">$${alumno.saldo ?? 0}</div>
+              <button class="btn-historial" onclick="abrirHistorial('${id}')">📋 Ver Historial / Deshacer</button>
             </div>
           `;
-        }).join('');
-      }
+          grid.appendChild(card);
+        }
+      });
 
-      actualizarContadoresSeleccion();
-
-      const alumno = alumnosObj[selectedId];
-      if (alumno) {
-        document.getElementById('no-selected').classList.add('hidden');
-        document.getElementById('selected-info').classList.remove('hidden');
-        document.getElementById('info-nombre').textContent = alumno.nombre;
-        document.getElementById('info-bebe').textContent = alumno.bebe;
-        document.getElementById('info-grupo').textContent = `6°${alumno.grupo || '6A'}`;
-        document.getElementById('info-id').textContent = alumno.id;
-        document.getElementById('info-saldo').textContent = `$${alumno.saldo}`;
-      } else {
-        document.getElementById('no-selected').classList.remove('hidden');
-        document.getElementById('selected-info').classList.add('hidden');
+      if (encontrados === 0) {
+        grid.innerHTML = `<p class="vacio-msg" style="grid-column: 1/-1;">No se encontraron alumnos con "${textoBusqueda}".</p>`;
       }
     }
 
-    async function toggleNfcScanner() {
-      if (!('NDEFReader' in window)) return alert('Web NFC solo disponible en Chrome para Android.');
-      try {
-        nfcReader = new NDEFReader();
-        await nfcReader.scan();
-        document.getElementById('nfc-status-banner').classList.remove('hidden');
-        nfcReader.onreading = event => {
-          const decoder = new TextDecoder();
-          for (const record of event.message.records) {
-            const codigo = decoder.decode(record.data);
-            if (alumnosObj[codigo]) {
-              aplicarTransaccion(codigo, accionActiva.monto, accionActiva.motivo);
-              selectedId = codigo;
-              alert(`✅ ${alumnosObj[codigo].nombre}: ${accionActiva.motivo}`);
-            }
-          }
-        };
-      } catch (error) { alert('Error NFC: ' + error.message); }
-    }
-    function stopNfcScanner() { document.getElementById('nfc-status-banner').classList.add('hidden'); }
+    // 3. Abrir ventana con el historial del alumno
+    window.abrirHistorial = function(id) {
+      alumnoSeleccionadoId = id;
+      document.getElementById('modal-historial').style.display = 'flex';
+      renderizarHistorial(id);
+    };
 
-    async function vincularNFC() {
-      if (!selectedId) return;
-      if (!('NDEFReader' in window)) return alert('Web NFC no soportado.');
-      try {
-        const writer = new NDEFReader();
-        alert('Acerca la tarjeta al celular para escribir...');
-        await writer.write(selectedId);
-        alert(`¡Código grabado con éxito!`);
-      } catch (error) { alert('Error: ' + error.message); }
+    window.cerrarModal = function() {
+      alumnoSeleccionadoId = null;
+      document.getElementById('modal-historial').style.display = 'none';
+    };
+
+    function renderizarHistorial(id) {
+      const alumno = todosLosAlumnos[id];
+      if (!alumno) return;
+
+      document.getElementById('modal-titulo').innerText = alumno.nombre;
+      document.getElementById('modal-subtitulo').innerText = `Saldo actual: $${alumno.saldo ?? 0} • Código: ${id}`;
+
+      const contenedor = document.getElementById('contenedor-historial');
+      contenedor.innerHTML = "";
+
+      const historial = alumno.historial;
+      if (!historial) {
+        contenedor.innerHTML = `<div class="vacio-msg">Este alumno aún no tiene movimientos registrados.</div>`;
+        return;
+      }
+
+      const movimientos = Object.entries(historial).reverse();
+
+      movimientos.forEach(([movId, datos]) => {
+        const monto = Number(datos.monto || 0);
+        const esPositivo = monto >= 0;
+        const concepto = datos.concepto || datos.tipo || "Movimiento";
+        const fecha = datos.fecha || "Sin fecha";
+
+        const item = document.createElement('div');
+        item.className = 'item-historial';
+        item.innerHTML = `
+          <div class="item-info">
+            <div class="item-concepto">${concepto}</div>
+            <div class="item-fecha">${fecha}</div>
+          </div>
+          <div class="item-derecha">
+            <span class="${esPositivo ? 'monto-pos' : 'monto-neg'}">
+              ${esPositivo ? '+' : ''}$${monto}
+            </span>
+            <button class="btn-deshacer" onclick="deshacerMovimiento('${id}', '${movId}', ${monto})">
+              ↩ Deshacer
+            </button>
+          </div>
+        `;
+        contenedor.appendChild(item);
+      });
     }
+
+    // 4. Función para deshacer un movimiento equivocado y devolver el saldo
+    window.deshacerMovimiento = async function(alumnoId, movId, montoOriginal) {
+      const confirmar = confirm(`¿Seguro que deseas deshacer este movimiento de $${montoOriginal}? El saldo del alumno se ajustará automáticamente.`);
+      if (!confirmar) return;
+
+      const alumno = todosLosAlumnos[alumnoId];
+      const saldoCorregido = (alumno.saldo || 0) - montoOriginal;
+
+      try {
+        await update(ref(db, `alumnos/${alumnoId}`), { saldo: saldoCorregido });
+        await remove(ref(db, `alumnos/${alumnoId}/historial/${movId}`));
+      } catch (error) {
+        alert("Hubo un error al deshacer el movimiento en Firebase.");
+        console.error(error);
+      }
+    };
   </script>
 </body>
 </html>
