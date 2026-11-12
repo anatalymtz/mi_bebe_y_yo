@@ -95,6 +95,7 @@
         </div>
       </div>
 
+      <!-- PRESETS DE ACCIONES -->
       <div class="card-playful p-5 border-t-8 border-t-amber-400 space-y-4">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
           <h2 class="text-sm font-black font-heading text-slate-800">Acción Activa seleccionada:</h2>
@@ -134,6 +135,21 @@
         </div>
       </div>
 
+      <!-- BOTONES DE APLICACIÓN MASIVA Y MULTISELECCIÓN -->
+      <div class="card-playful p-4 border-t-8 border-t-purple-500 bg-purple-50/40 space-y-3">
+        <h3 class="text-xs font-black uppercase text-purple-900 flex items-center gap-2">
+          <i class="fa-solid fa-list-check text-purple-600 text-sm"></i> Operaciones Masivas (Varios / Todos)
+        </h3>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="aplicarAccionSeleccionados()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-black py-2.5 px-4 rounded-xl shadow-md transition font-heading flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-user-check"></i> Aplicar a Seleccionados (<span id="count-seleccionados">0</span>)
+          </button>
+          <button onclick="aplicarAccionATodos()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black py-2.5 px-4 rounded-xl shadow-md transition font-heading flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-users"></i> Aplicar a Todo 6°<span class="grupo-label">A</span>
+          </button>
+        </div>
+      </div>
+
       <div class="card-playful p-5 border-t-8 border-t-teal-400">
         <h2 class="text-base font-black font-heading mb-3 text-slate-700 flex justify-between items-center">
           <span><i class="fa-solid fa-user-plus mr-2 text-teal-500"></i> Registrar Nuevo Alumno</span>
@@ -150,19 +166,26 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="card-playful p-4 md:col-span-1 border-t-8 border-t-indigo-400">
-          <h3 class="font-black text-sm text-slate-700 mb-3 flex justify-between items-center">
-            <span id="titulo-lista-alumnos">Alumnos 6°A</span>
-            <span id="count-alumnos" class="bg-indigo-100 text-indigo-700 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
-          </h3>
+        <!-- LISTA DE ALUMNOS CON CHECKBOXES -->
+        <div class="card-playful p-4 md:col-span-1 border-t-8 border-t-indigo-400 space-y-3">
+          <div class="flex justify-between items-center">
+            <h3 class="font-black text-sm text-slate-700 flex items-center gap-1">
+              <span id="titulo-lista-alumnos">Alumnos 6°A</span>
+              <span id="count-alumnos" class="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+            </h3>
+            <button onclick="toggleSeleccionarTodos()" class="text-[11px] font-bold text-indigo-600 hover:underline">
+              <span id="label-toggle-all">✓ Seleccionar todos</span>
+            </button>
+          </div>
           <div id="lista-alumnos" class="space-y-2 max-h-[350px] overflow-y-auto pr-1"></div>
         </div>
 
+        <!-- DETALLE DEL ALUMNO SELECCIONADO -->
         <div class="card-playful p-5 md:col-span-2 border-t-8 border-t-pink-400">
           <div id="detalle-alumno-container">
             <div id="no-selected" class="py-12 text-center text-slate-400">
               <i class="fa-solid fa-hand-pointer text-4xl mb-2 opacity-30 text-indigo-400"></i>
-              <p class="text-xs font-bold">Selecciona un alumno para operar</p>
+              <p class="text-xs font-bold">Selecciona un alumno para operar en detalle</p>
             </div>
 
             <div id="selected-info" class="hidden space-y-4">
@@ -206,6 +229,7 @@
     let alumnosObj = {};
     let grupoActivo = '6A';
     let selectedId = null;
+    let seleccionadosSet = new Set();
     let nfcReader = null;
     let accionActiva = { monto: 100, motivo: 'Actividad terminada' };
 
@@ -234,7 +258,10 @@
       document.getElementById('btn-grupo-6B').className = grupo === '6B' ? 'px-5 py-2.5 rounded-2xl font-black text-sm font-heading shadow-md transition bg-sky-500 text-white' : 'px-5 py-2.5 rounded-2xl font-black text-sm font-heading transition bg-slate-100 text-slate-600 hover:bg-slate-200';
       document.getElementById('badge-grupo-registro').textContent = `Asignando a 6°${grupo}`;
       document.getElementById('titulo-lista-alumnos').textContent = `Alumnos 6°${grupo}`;
+      document.querySelectorAll('.grupo-label').forEach(el => el.textContent = grupo);
+      
       selectedId = null;
+      seleccionadosSet.clear();
       render();
     }
 
@@ -243,6 +270,61 @@
       document.getElementById('label-accion-activa').textContent = `${motivo} (${monto > 0 ? '+$' : '-$'}${Math.abs(monto)})`;
       document.querySelectorAll('.btn-preset').forEach(btn => btn.classList.remove('action-btn-active'));
       event.target.classList.add('action-btn-active');
+    }
+
+    function toggleSeleccionAlumno(id, e) {
+      e.stopPropagation();
+      if (seleccionadosSet.has(id)) {
+        seleccionadosSet.delete(id);
+      } else {
+        seleccionadosSet.add(id);
+      }
+      actualizarContadoresSeleccion();
+    }
+
+    function toggleSeleccionarTodos() {
+      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
+      if (seleccionadosSet.size === alumnosDelGrupo.length) {
+        seleccionadosSet.clear();
+      } else {
+        alumnosDelGrupo.forEach(a => seleccionadosSet.add(a.id));
+      }
+      render();
+    }
+
+    function actualizarContadoresSeleccion() {
+      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
+      document.getElementById('count-seleccionados').textContent = seleccionadosSet.size;
+      document.getElementById('label-toggle-all').textContent = seleccionadosSet.size === alumnosDelGrupo.length && alumnosDelGrupo.length > 0 ? '✕ Desmarcar todos' : '✓ Seleccionar todos';
+    }
+
+    function aplicarAccionSeleccionados() {
+      if (seleccionadosSet.size === 0) return alert('Por favor selecciona al menos un alumno.');
+      const confirmacion = confirm(`¿Aplicar "${accionActiva.motivo}" (${accionActiva.monto > 0 ? '+$' : '-$'}${Math.abs(accionActiva.monto)}) a los ${seleccionadosSet.size} alumnos seleccionados?`);
+      if (!confirmacion) return;
+
+      seleccionadosSet.forEach(id => {
+        aplicarTransaccion(id, accionActiva.monto, accionActiva.motivo);
+      });
+
+      alert(`✅ Se aplicó el movimiento a ${seleccionadosSet.size} alumnos.`);
+      seleccionadosSet.clear();
+      render();
+    }
+
+    function aplicarAccionATodos() {
+      const alumnosDelGrupo = Object.values(alumnosObj).filter(a => (a.grupo || '6A') === grupoActivo);
+      if (alumnosDelGrupo.length === 0) return alert(`No hay alumnos en 6°${grupoActivo}.`);
+
+      const confirmacion = confirm(`¿Aplicar "${accionActiva.motivo}" (${accionActiva.monto > 0 ? '+$' : '-$'}${Math.abs(accionActiva.monto)}) A TODO EL GRUPO 6°${grupoActivo} (${alumnosDelGrupo.length} alumnos)?`);
+      if (!confirmacion) return;
+
+      alumnosDelGrupo.forEach(a => {
+        aplicarTransaccion(a.id, accionActiva.monto, accionActiva.motivo);
+      });
+
+      alert(`✅ Se aplicó la transacción a todos los alumnos de 6°${grupoActivo}.`);
+      render();
     }
 
     function registrarAlumno(e) {
@@ -280,6 +362,7 @@
     function eliminarAlumno() {
       if (!selectedId || !confirm('¿Eliminar a este alumno de la nube?')) return;
       db.ref('alumnos/' + selectedId).remove();
+      seleccionadosSet.delete(selectedId);
       selectedId = null;
     }
 
@@ -291,16 +374,25 @@
       if (listaAlumnos.length === 0) {
         lista.innerHTML = `<p class="text-xs text-slate-400 italic">No hay alumnos registrados en 6°${grupoActivo}.</p>`;
       } else {
-        lista.innerHTML = listaAlumnos.map(a => `
-          <div onclick="selectedId='${a.id}'; render();" class="p-3 rounded-2xl border-2 cursor-pointer transition flex justify-between items-center ${a.id === selectedId ? 'bg-indigo-100 border-indigo-400 text-indigo-900 font-bold' : 'bg-white hover:bg-slate-50 border-slate-100'}">
-            <div>
-              <p class="font-bold text-xs">${a.nombre}</p>
-              <p class="text-[10px] text-slate-400 font-mono">${a.id}</p>
+        lista.innerHTML = listaAlumnos.map(a => {
+          const isChecked = seleccionadosSet.has(a.id);
+          const isSelected = a.id === selectedId;
+          return `
+            <div onclick="selectedId='${a.id}'; render();" class="p-2.5 rounded-2xl border-2 cursor-pointer transition flex items-center justify-between gap-2 ${isSelected ? 'bg-indigo-100 border-indigo-400 text-indigo-900 font-bold' : 'bg-white hover:bg-slate-50 border-slate-100'}">
+              <div class="flex items-center gap-2 overflow-hidden">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onclick="toggleSeleccionAlumno('${a.id}', event)" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                <div class="truncate">
+                  <p class="font-bold text-xs truncate">${a.nombre}</p>
+                  <p class="text-[10px] text-slate-400 font-mono">${a.id}</p>
+                </div>
+              </div>
+              <span class="font-black text-xs text-indigo-600 bg-white px-2 py-1 rounded-lg border border-indigo-200 font-heading shrink-0">$${a.saldo}</span>
             </div>
-            <span class="font-black text-xs text-indigo-600 bg-white px-2 py-1 rounded-lg border border-indigo-200 font-heading">$${a.saldo}</span>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
+
+      actualizarContadoresSeleccion();
 
       const alumno = alumnosObj[selectedId];
       if (alumno) {
