@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cobro NFC - Mi Bebé y Yo</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; display: flex; justify-content: center; }
+    .tarjeta { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
+    .grupo-badge { background: #e2e8f0; color: #334155; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+    h1 { font-size: 1.5rem; color: #1e293b; margin: 5px 0; }
+    .bebe-info { color: #64748b; font-size: 1rem; margin-bottom: 20px; }
+    .saldo-box { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 20px; }
+    .saldo-label { font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+    .saldo-cantidad { font-size: 2.5rem; font-weight: 800; color: #0f172a; margin: 5px 0; }
+    .input-monto { width: 80%; padding: 12px; font-size: 1.2rem; text-align: center; border: 2px solid #cbd5e1; border-radius: 12px; margin-bottom: 15px; }
+    .botones { display: flex; gap: 10px; }
+    button { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 1rem; font-weight: bold; color: white; cursor: pointer; }
+    .btn-cobrar { background-color: #ef4444; }
+    .btn-abonar { background-color: #10b981; }
+    .mensaje { margin-top: 15px; font-size: 0.9rem; font-weight: 500; min-height: 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="tarjeta">
+    <div class="grupo-badge" id="grupo">Cargando...</div>
+    <h1 id="nombre">Buscando alumno...</h1>
+    <div class="bebe-info" id="bebe">👶 Bebé: -</div>
+
+    <div class="saldo-box">
+      <div class="saldo-label">Saldo Actual</div>
+      <div class="saldo-cantidad" id="saldo">$0</div>
+    </div>
+
+    <input type="number" id="monto" class="input-monto" placeholder="Escribe la cantidad ($)" inputmode="numeric">
+
+    <div class="botones">
+      <button class="btn-cobrar" onclick="aplicarMovimiento('cobro')">- Cobrar</button>
+      <button class="btn-abonar" onclick="aplicarMovimiento('abono')">+ Abonar</button>
+    </div>
+
+    <div class="mensaje" id="mensaje"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, get, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Conexión directa a tu base de datos de Firebase
+    const firebaseConfig = {
+      databaseURL: "https://mi-bebe-y-yo-233db-default-rtdb.firebaseio.com"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Leer el código del alumno desde la URL (?id=ALU-1041)
+    const params = new URLSearchParams(window.location.search);
+    const idAlumno = params.get('id');
+
+    let datosActuales = null;
+
+    async function cargarAlumno() {
+      if (!idAlumno) {
+        document.getElementById('nombre').innerText = "Falta el código en el enlace";
+        document.getElementById('grupo').innerText = "Error";
+        return;
+      }
+
+      const alumnoRef = ref(db, `alumnos/${idAlumno}`);
+      const snapshot = await get(alumnoRef);
+
+      if (snapshot.exists()) {
+        datosActuales = snapshot.val();
+        document.getElementById('grupo').innerText = `Grupo ${datosActuales.grupo || ''} • ${idAlumno}`;
+        document.getElementById('nombre').innerText = datosActuales.nombre;
+        document.getElementById('bebe').innerText = `👶 Bebé: ${datosActuales.bebe || 'Sin asignar'}`;
+        document.getElementById('saldo').innerText = `$${datosActuales.saldo}`;
+      } else {
+        document.getElementById('nombre').innerText = "Alumno no encontrado";
+        document.getElementById('grupo').innerText = idAlumno;
+      }
+    }
+
+    window.aplicarMovimiento = async function(tipo) {
+      if (!datosActuales) return;
+      
+      const input = document.getElementById('monto');
+      const cantidad = parseFloat(input.value);
+      const msg = document.getElementById('mensaje');
+
+      if (!cantidad || cantidad <= 0) {
+        msg.style.color = "#ef4444";
+        msg.innerText = "Por favor escribe una cantidad válida.";
+        return;
+      }
+
+      msg.style.color = "#64748b";
+      msg.innerText = "Guardando en Firebase...";
+
+      const nuevoSaldo = tipo === 'cobro' 
+        ? datosActuales.saldo - cantidad 
+        : datosActuales.saldo + cantidad;
+
+      try {
+        const alumnoRef = ref(db, `alumnos/${idAlumno}`);
+        
+        // 1. Actualiza el saldo principal
+        await update(alumnoRef, { saldo: nuevoSaldo });
+
+        // 2. Guarda el registro en el historial del alumno
+        const historialRef = ref(db, `alumnos/${idAlumno}/historial`);
+        await push(historialRef, {
+          tipo: tipo === 'cobro' ? 'Cobro NFC' : 'Abono NFC',
+          monto: cantidad,
+          fecha: new Date().toLocaleDateString('es-MX')
+        });
+
+        datosActuales.saldo = nuevoSaldo;
+        document.getElementById('saldo').innerText = `$${nuevoSaldo}`;
+        input.value = "";
+        
+        msg.style.color = "#10b981";
+        msg.innerText = `¡Listo! ${tipo === 'cobro' ? 'Cobro' : 'Abono'} de $${cantidad} aplicado.`;
+      } catch (error) {
+        msg.style.color = "#ef4444";
+        msg.innerText = "Error al guardar. Revisa las reglas de Firebase.";
+      }
+    };
+
+    cargarAlumno();
+  </script>
+</body>
+</html>
