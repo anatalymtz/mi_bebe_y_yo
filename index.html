@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Bebé y Yo - Portal Alumnos</title>
+  <title>Mi Bebé y Yo - Portal del Alumno</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
@@ -25,80 +25,205 @@
       box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.15), 0 8px 10px -6px rgba(14, 165, 233, 0.1);
       border: 3px solid #e0f2fe;
     }
+    @keyframes float-baby {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .baby-float {
+      animation: float-baby 2.8s ease-in-out infinite;
+    }
   </style>
 </head>
 <body class="min-h-screen text-slate-700 pb-12">
 
   <!-- ENCABEZADO -->
-  <header class="bg-gradient-to-r from-sky-400 via-indigo-400 to-pink-400 text-white shadow-lg p-5 rounded-b-3xl relative overflow-hidden">
-    <div class="max-w-4xl mx-auto flex justify-between items-center relative z-10">
+  <header class="bg-gradient-to-r from-sky-400 via-indigo-400 to-pink-400 text-white shadow-lg p-5 rounded-b-3xl">
+    <div class="max-w-2xl mx-auto flex justify-between items-center gap-3">
       <div class="flex items-center space-x-3">
         <div class="bg-white/30 backdrop-blur-md p-3 rounded-2xl shadow-inner">
           <i class="fa-solid fa-baby text-3xl text-yellow-300"></i>
         </div>
         <div>
           <h1 class="text-2xl font-black font-heading tracking-wide">¡Mi Bebé y Yo!</h1>
-          <p class="text-xs font-bold text-sky-100">Maternidad y Paternidad Responsable</p>
+          <p class="text-xs font-bold text-sky-100">Mi Estado de Cuenta Familiar</p>
         </div>
       </div>
+
+      <button id="btn-salir" onclick="cerrarSesionAlumno()" class="hidden bg-white/25 hover:bg-white/35 backdrop-blur-md px-3.5 py-2 rounded-xl text-xs font-black border border-white/40 transition flex items-center gap-1.5">
+        <i class="fa-solid fa-right-from-bracket"></i> Salir
+      </button>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto p-4 space-y-6 mt-4">
-    <!-- VISTA ALUMNO -->
-    <section class="space-y-6">
-      <div class="card-playful p-6 max-w-lg mx-auto text-center space-y-4 border-t-8 border-t-sky-400">
-        <div class="w-16 h-16 bg-sky-100 text-sky-500 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </div>
-        <h2 class="text-xl font-black font-heading text-slate-800">¿Cómo va tu bebé hoy?</h2>
-        <p class="text-xs text-slate-500 font-medium">Escribe tu código de alumno para consultar tu saldo.</p>
-        
-        <div class="flex gap-2">
-          <input type="text" id="alumno-codigo-input" placeholder="Ej. ALU-1234" class="flex-1 p-3 border-2 border-sky-200 rounded-2xl text-center font-mono font-bold text-sm uppercase focus:ring-4 focus:ring-sky-200 outline-none">
-          <button onclick="consultarAlumnoPorCodigo()" class="bg-sky-500 hover:bg-sky-600 text-white font-black px-6 py-3 rounded-2xl text-sm shadow-md transition active:scale-95 font-heading">
-            Ver Saldo
-          </button>
-        </div>
+  <main class="max-w-2xl mx-auto p-4 space-y-6 mt-4">
+
+    <!-- PANTALLA DE INICIO DE SESIÓN CON CÓDIGO ALU-XXXX -->
+    <section id="vista-login" class="card-playful p-7 sm:p-8 border-t-8 border-t-sky-500 text-center space-y-5 mt-6">
+      <div class="w-20 h-20 mx-auto bg-sky-100 text-sky-500 rounded-3xl flex items-center justify-center text-4xl shadow-inner baby-float">
+        🍼
+      </div>
+      <div class="space-y-1">
+        <h2 class="text-2xl font-black font-heading text-slate-800">¡Hola, mamá o papá!</h2>
+        <p class="text-xs sm:text-sm font-bold text-slate-500">Escribe tu código secreto para revisar cómo está tu bebé y cuánto dinero tienes disponible.</p>
       </div>
 
-      <div id="resultado-alumno" class="hidden space-y-6">
-        <div class="bg-gradient-to-br from-indigo-500 via-sky-500 to-teal-400 text-white p-6 rounded-3xl shadow-xl border-4 border-white relative overflow-hidden">
-          <div class="flex justify-between items-start mb-6 relative z-10">
-            <div>
-              <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-sm">Cuidando a:</span>
-              <h3 id="student-view-nombre" class="text-3xl font-black font-heading mt-1">---</h3>
-              <p class="text-sm text-sky-100 mt-1 flex items-center gap-2">
-                <span class="bg-white/30 px-2.5 py-0.5 rounded-lg text-xs">👶 Bebé: <b id="student-view-bebe" class="text-white">---</b></span>
-                <span id="student-view-grupo-badge" class="bg-amber-400 text-amber-950 font-black px-2 py-0.5 rounded-md text-xs font-mono">6°A</span>
-              </p>
-            </div>
-            <div class="text-right bg-white/20 backdrop-blur-md p-3 rounded-2xl border border-white/30">
-              <span class="text-xs text-sky-100 font-bold block uppercase">Dinero Disponible</span>
-              <span id="student-view-saldo" class="text-4xl font-black text-yellow-300 font-heading">$0</span>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 pt-4 border-t border-white/20 text-center relative z-10">
-            <div class="bg-emerald-500/30 border border-emerald-300/40 rounded-2xl p-3 backdrop-blur-sm">
-              <span class="text-xs text-emerald-100 block font-bold">✨ Ganado hoy</span>
-              <span id="student-view-ganado" class="text-xl font-black text-emerald-200 font-heading">+$0</span>
-            </div>
-            <div class="bg-rose-500/30 border border-rose-300/40 rounded-2xl p-3 backdrop-blur-sm">
-              <span class="text-xs text-rose-100 block font-bold">💸 Gastado hoy</span>
-              <span id="student-view-perdido" class="text-xl font-black text-rose-200 font-heading">-$0</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-playful p-5 space-y-4">
-          <h4 class="font-black text-base font-heading text-slate-700 flex items-center gap-2">
-            <i class="fa-solid fa-receipt text-sky-500"></i> Bitácora de Movimientos
-          </h4>
-          <div id="student-view-historial" class="space-y-2 max-h-[350px] overflow-y-auto pr-1"></div>
-        </div>
-      </div>
+      <form onsubmit="iniciarSesionAlumno(event)" class="max-w-xs mx-auto space-y-3">
+        <input
+          type="text"
+          id="input-codigo"
+          placeholder="Ej. ALU-1234"
+          required
+          autocomplete="off"
+          class="w-full text-center font-mono uppercase text-xl font-black tracking-widest p-3.5 border-4 border-sky-200 rounded-2xl focus:border-indigo-400 outline-none bg-sky-50/50 text-slate-800"
+        >
+        <p id="login-error" class="text-xs font-black text-rose-600 hidden">
+          ❌ No encontramos ese código. Revisa bien las letras y números.
+        </p>
+        <button type="submit" class="w-full bg-gradient-to-r from-sky-500 to-indigo-500 hover:opacity-95 text-white font-black py-3.5 rounded-2xl text-base font-heading shadow-lg transition active:scale-95">
+          Entrar a ver a mi bebé →
+        </button>
+      </form>
     </section>
+
+    <!-- PANEL PRINCIPAL DEL ALUMNO -->
+    <section id="vista-panel" class="hidden space-y-6">
+
+      <!-- TARJETA DE PERFIL, SALDO Y ESTADO DE ÁNIMO DEL BEBÉ -->
+      <div id="card-perfil-bebe" class="card-playful p-6 border-t-8 border-t-indigo-500 space-y-5">
+        <div class="flex flex-wrap justify-between items-start gap-3 border-b border-slate-100 pb-4">
+          <div class="space-y-0.5">
+            <span id="alumno-grupo-badge" class="inline-block bg-indigo-100 text-indigo-700 text-[11px] font-black px-3 py-0.5 rounded-full uppercase">
+              Grupo 6°A
+            </span>
+            <h2 id="alumno-nombre" class="text-2xl font-black font-heading text-slate-800 pt-1">---</h2>
+            <p class="text-xs font-bold text-slate-500">
+              Cuidando a: <b id="alumno-bebe" class="text-pink-600 text-sm">---</b> • Código: <span id="alumno-codigo" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded">---</span>
+            </p>
+          </div>
+
+          <div class="text-right bg-slate-50 px-4 py-2.5 rounded-2xl border-2 border-slate-100">
+            <span class="text-[10px] font-black text-slate-400 uppercase block">Saldo Disponible</span>
+            <span id="alumno-saldo" class="text-3xl sm:text-4xl font-black font-heading text-indigo-600">$0</span>
+          </div>
+        </div>
+
+        <!-- ESTADO DE ÁNIMO Y BIENESTAR DEL BEBÉ -->
+        <div id="box-estado-bebe" class="p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-200 flex items-center gap-4">
+          <div id="bebe-emoji" class="text-5xl baby-float shrink-0">😊</div>
+          <div class="flex-1 space-y-1.5">
+            <div class="flex justify-between items-center">
+              <h3 id="bebe-estado-titulo" class="text-sm sm:text-base font-black font-heading text-emerald-900">
+                ¡Tu bebé está muy feliz y bien cuidado!
+              </h3>
+              <span id="bebe-bienestar-pct" class="text-xs font-black font-mono text-emerald-700">100%</span>
+            </div>
+            <p id="bebe-estado-desc" class="text-xs font-bold text-emerald-700/90">
+              Tienes suficiente dinero para cubrir su comida, pañales y cualquier emergencia.
+            </p>
+            <div class="w-full h-3 bg-white rounded-full overflow-hidden border border-emerald-200">
+              <div id="bebe-barra-bienestar" class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width: 100%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALERTA DE DEUDA PENDIENTE POR PRÉSTAMO -->
+        <div id="alumno-alerta-deuda" class="hidden p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 flex items-center gap-3">
+          <span class="text-2xl shrink-0">🏦</span>
+          <div class="text-xs font-bold text-amber-950">
+            <p class="font-black text-amber-900">Tienes un préstamo activo por pagar: <span id="alumno-monto-deuda" class="font-mono text-rose-700 text-sm">$525</span></p>
+            <p class="text-[11px] text-amber-800 mt-0.5">Recuerda que incluye el <b>5% de interés ($25 extra)</b>. Cuando juntes dinero suficiente en los próximos días, la maestra descontará el pago de tu préstamo.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MÓDULO AUTOMÁTICO DE RESCATE SI EL SALDO ES NEGATIVO (< $0) -->
+      <div id="modulo-rescate-alumno" class="hidden card-playful p-6 border-t-8 border-t-rose-500 bg-rose-50/40 space-y-5">
+        <div class="space-y-1">
+          <span class="inline-block bg-rose-500 text-white text-[11px] font-black px-3 py-1 rounded-full uppercase tracking-wide">
+            🚨 ¡Alerta! Estás en números rojos
+          </span>
+          <h3 class="text-xl font-black font-heading text-rose-900 pt-1">
+            ¿Qué hacer cuando te quedas sin dinero?
+          </h3>
+          <p class="text-xs font-bold text-slate-600">
+            Tu saldo es negativo y tu bebé necesita comida, pañales y cuidados. Elige una de las siguientes opciones y acude con tu maestra para recuperarte:
+          </p>
+        </div>
+
+        <!-- PASO 4 OBLIGATORIO PRIMERO -->
+        <div class="p-4 rounded-2xl bg-amber-100/90 border-2 border-amber-400 space-y-1.5 shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="bg-amber-500 text-amber-950 font-black text-xs px-2.5 py-0.5 rounded-lg">PASO OBLIGATORIO</span>
+            <h4 class="text-sm font-black font-heading text-amber-950">4. 📋 Hacer un Presupuesto Escrito</h4>
+          </div>
+          <p class="text-xs font-bold text-amber-900 leading-relaxed">
+            <b>Antes de recibir cualquier ayuda</b>, debes entregarle a tu maestra un plan sencillo en tu cuaderno o en una hoja donde expliques:
+          </p>
+          <ul class="text-xs font-bold text-amber-950 list-disc list-inside space-y-0.5 pl-1">
+            <li>Cuánto dinero ganas al día.</li>
+            <li>Cuánto gastas en las necesidades de tu bebé.</li>
+            <li>En qué vas a ahorrar para no volver a quedarte sin dinero.</li>
+          </ul>
+        </div>
+
+        <!-- LAS 3 OPCIONES DE RESCATE -->
+        <div class="space-y-3">
+          <!-- Opción 1: Préstamo -->
+          <div class="p-4 rounded-2xl bg-white border-2 border-amber-200 shadow-sm space-y-1">
+            <div class="flex justify-between items-center gap-2">
+              <h4 class="text-sm font-black font-heading text-amber-900">1. 🏦 Pedir un Préstamo con Intereses</h4>
+              <span class="bg-amber-100 text-amber-900 font-mono font-black text-xs px-2.5 py-1 rounded-lg">Recibes +$500</span>
+            </div>
+            <p class="text-xs font-bold text-slate-600 leading-relaxed">
+              Te prestamos <b>$500</b> hoy mismo para salir del apuro, pero deberás devolver el <b>5% extra de interés ($525 en total)</b> con lo que ganes los días siguientes.
+            </p>
+          </div>
+
+          <!-- Opción 2: Trabajo Extra -->
+          <div class="p-4 rounded-2xl bg-white border-2 border-sky-200 shadow-sm space-y-1.5">
+            <div class="flex justify-between items-center gap-2">
+              <h4 class="text-sm font-black font-heading text-sky-900">2. 📚 Realizar un Trabajo Extra</h4>
+              <span class="bg-sky-100 text-sky-900 font-mono font-black text-xs px-2.5 py-1 rounded-lg">Ganas +$300</span>
+            </div>
+            <p class="text-xs font-bold text-slate-600">
+              Entrega tu presupuesto y elige <b>una</b> de estas tres tareas para ganar <b>$300</b>:
+            </p>
+            <ol class="text-xs font-bold text-slate-700 list-decimal list-inside space-y-1 bg-sky-50/70 p-3 rounded-xl border border-sky-100">
+              <li>Investigar <b>cuánto cuesta realmente mantener un bebé en México</b>.</li>
+              <li>Hacer un <b>tríptico sobre los métodos anticonceptivos</b>.</li>
+              <li>Preparar una <b>mini exposición con cartel</b> sobre algún tema visto en el ciclo escolar.</li>
+            </ol>
+          </div>
+
+          <!-- Opción 3: Programa de Apoyo -->
+          <div id="card-opcion-apoyo" class="p-4 rounded-2xl bg-white border-2 border-emerald-200 shadow-sm space-y-1">
+            <div class="flex justify-between items-center gap-2">
+              <h4 id="titulo-opcion-apoyo" class="text-sm font-black font-heading text-emerald-900">3. ✉️ Solicitar un Programa de Apoyo</h4>
+              <span id="badge-opcion-apoyo" class="bg-emerald-100 text-emerald-900 font-mono font-black text-xs px-2.5 py-1 rounded-lg">Recibes +$500</span>
+            </div>
+            <p id="desc-opcion-apoyo" class="text-xs font-bold text-slate-600 leading-relaxed">
+              Redacta una <b>carta formal</b> (con fecha, destinatario, saludo, explicación de por qué necesitas ayuda, despedida y firma) y espera 1 o 2 días a que sea aprobada. <b>Solo se puede usar una vez.</b>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- HISTORIAL DE MOVIMIENTOS DEL ALUMNO -->
+      <div class="card-playful p-6 border-t-8 border-t-pink-400 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h3 class="text-base font-black font-heading text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-receipt text-pink-500"></i> Historial de Ingresos y Gastos
+          </h3>
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Actualizado en vivo</span>
+        </div>
+
+        <div id="alumno-historial" class="space-y-2 max-h-[380px] overflow-y-auto pr-1">
+          <p class="text-xs text-slate-400 italic">Cargando movimientos...</p>
+        </div>
+      </div>
+
+    </section>
+
   </main>
 
   <script>
@@ -106,56 +231,207 @@
     firebase.initializeApp({ databaseURL: FIREBASE_URL });
     const db = firebase.database();
 
-    let alumnosObj = {};
+    let codigoActual = localStorage.getItem('mby_codigo_alumno') || null;
+    let refAlumnoActual = null;
 
-    db.ref('alumnos').on('value', snapshot => {
-      alumnosObj = snapshot.val() || {};
-    });
+    // Si ya había iniciado sesión antes, cargar automáticamente
+    if (codigoActual) {
+      conectarAlumno(codigoActual, true);
+    }
 
-    function consultarAlumnoPorCodigo() {
-      const codigo = document.getElementById('alumno-codigo-input').value.trim().toUpperCase();
-      const alumno = Object.values(alumnosObj).find(a => a.id.toUpperCase() === codigo || a.nombre.toUpperCase().includes(codigo));
-      const container = document.getElementById('resultado-alumno');
+    function iniciarSesionAlumno(e) {
+      e.preventDefault();
+      const input = document.getElementById('input-codigo').value.trim().toUpperCase();
+      if (!input) return;
+      conectarAlumno(input, false);
+    }
 
-      if (!alumno) {
-        alert('Alumno no encontrado.');
-        container.classList.add('hidden');
-        return;
+    function conectarAlumno(codigo, esAutomatico) {
+      document.getElementById('login-error').classList.add('hidden');
+
+      db.ref('alumnos/' + codigo).once('value').then(snapshot => {
+        if (!snapshot.exists()) {
+          if (esAutomatico) {
+            localStorage.removeItem('mby_codigo_alumno');
+            codigoActual = null;
+          } else {
+            document.getElementById('login-error').classList.remove('hidden');
+          }
+          return;
+        }
+
+        codigoActual = codigo;
+        localStorage.setItem('mby_codigo_alumno', codigo);
+
+        document.getElementById('vista-login').classList.add('hidden');
+        document.getElementById('vista-panel').classList.remove('hidden');
+        document.getElementById('btn-salir').classList.remove('hidden');
+
+        if (refAlumnoActual) refAlumnoActual.off();
+        refAlumnoActual = db.ref('alumnos/' + codigo);
+        refAlumnoActual.on('value', snap => {
+          const datos = snap.val();
+          if (!datos) {
+            cerrarSesionAlumno();
+            return;
+          }
+          renderAlumno(datos);
+        });
+      });
+    }
+
+    function cerrarSesionAlumno() {
+      if (refAlumnoActual) {
+        refAlumnoActual.off();
+        refAlumnoActual = null;
+      }
+      localStorage.removeItem('mby_codigo_alumno');
+      codigoActual = null;
+      document.getElementById('input-codigo').value = '';
+      document.getElementById('vista-panel').classList.add('hidden');
+      document.getElementById('btn-salir').classList.add('hidden');
+      document.getElementById('vista-login').classList.remove('hidden');
+    }
+
+    function renderAlumno(alumno) {
+      document.getElementById('alumno-grupo-badge').textContent = `Grupo 6°${alumno.grupo || '6A'}`;
+      document.getElementById('alumno-nombre').textContent = alumno.nombre;
+      document.getElementById('alumno-bebe').textContent = alumno.bebe;
+      document.getElementById('alumno-codigo').textContent = alumno.id;
+
+      const saldo = alumno.saldo || 0;
+      const saldoEl = document.getElementById('alumno-saldo');
+      const cardPerfil = document.getElementById('card-perfil-bebe');
+
+      if (saldo < 0) {
+        saldoEl.textContent = `-$${Math.abs(saldo)}`;
+        saldoEl.className = 'text-3xl sm:text-4xl font-black font-heading text-rose-600';
+        cardPerfil.className = 'card-playful p-6 border-t-8 border-t-rose-500 space-y-5';
+      } else {
+        saldoEl.textContent = `$${saldo}`;
+        saldoEl.className = 'text-3xl sm:text-4xl font-black font-heading text-indigo-600';
+        cardPerfil.className = 'card-playful p-6 border-t-8 border-t-indigo-500 space-y-5';
       }
 
-      container.classList.remove('hidden');
-      document.getElementById('student-view-nombre').textContent = alumno.nombre;
-      document.getElementById('student-view-bebe').textContent = alumno.bebe;
-      document.getElementById('student-view-grupo-badge').textContent = `6°${alumno.grupo || 'A'}`;
-      document.getElementById('student-view-saldo').textContent = `$${alumno.saldo}`;
+      // Actualizar estado de ánimo y barra de bienestar del bebé
+      actualizarEstadoBebe(saldo);
 
-      const hoy = new Date().toDateString();
-      let ganado = 0, perdido = 0;
+      // Mostrar aviso de préstamo pendiente si tiene deuda
+      const deuda = alumno.deudaPrestamo || 0;
+      const alertaDeuda = document.getElementById('alumno-alerta-deuda');
+      if (deuda > 0) {
+        alertaDeuda.classList.remove('hidden');
+        document.getElementById('alumno-monto-deuda').textContent = `$${deuda}`;
+      } else {
+        alertaDeuda.classList.add('hidden');
+      }
 
-      (alumno.historial || []).forEach(h => {
-        if (new Date(h.fecha).toDateString() === hoy) {
-          if (h.monto > 0 && !h.motivo.includes('inicial')) ganado += h.monto;
-          if (h.monto < 0) perdido += Math.abs(h.monto);
+      // Mostrar opciones de rescate si el saldo es negativo
+      const moduloRescate = document.getElementById('modulo-rescate-alumno');
+      if (saldo < 0) {
+        moduloRescate.classList.remove('hidden');
+
+        // Indicar si el Programa de Apoyo ya fue utilizado
+        const cardApoyo = document.getElementById('card-opcion-apoyo');
+        const tituloApoyo = document.getElementById('titulo-opcion-apoyo');
+        const badgeApoyo = document.getElementById('badge-opcion-apoyo');
+        const descApoyo = document.getElementById('desc-opcion-apoyo');
+
+        if (alumno.apoyoFormalUsado) {
+          cardApoyo.className = 'p-4 rounded-2xl bg-slate-100 border-2 border-slate-200 opacity-70 space-y-1';
+          tituloApoyo.textContent = '3. 🔒 Programa de Apoyo (Ya utilizado)';
+          tituloApoyo.className = 'text-sm font-black font-heading text-slate-600';
+          badgeApoyo.textContent = 'Usado';
+          badgeApoyo.className = 'bg-slate-200 text-slate-600 font-mono font-black text-xs px-2.5 py-1 rounded-lg';
+          descApoyo.textContent = 'Ya utilizaste esta ayuda única de $500. Elige el Préstamo (Opción 1) o el Trabajo Extra (Opción 2).';
+        } else {
+          cardApoyo.className = 'p-4 rounded-2xl bg-white border-2 border-emerald-200 shadow-sm space-y-1';
+          tituloApoyo.textContent = '3. ✉️ Solicitar un Programa de Apoyo';
+          tituloApoyo.className = 'text-sm font-black font-heading text-emerald-900';
+          badgeApoyo.textContent = 'Recibes +$500';
+          badgeApoyo.className = 'bg-emerald-100 text-emerald-900 font-mono font-black text-xs px-2.5 py-1 rounded-lg';
+          descApoyo.innerHTML = 'Redacta una <b>carta formal</b> (con fecha, destinatario, saludo, explicación de por qué necesitas ayuda, despedida y firma) y espera 1 o 2 días a que sea aprobada. <b>Solo se puede usar una vez.</b>';
         }
-      });
+      } else {
+        moduloRescate.classList.add('hidden');
+      }
 
-      document.getElementById('student-view-ganado').textContent = `+$${ganado}`;
-      document.getElementById('student-view-perdido').textContent = `-$${perdido}`;
-
-      document.getElementById('student-view-historial').innerHTML = (alumno.historial || []).map(h => {
+      // Renderizar historial
+      const historialHTML = (alumno.historial || []).map(h => {
         const esPos = h.monto > 0;
+        const fechaFormateada = new Date(h.fecha).toLocaleString('es-MX', {
+          day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+        });
         return `
-          <div class="flex justify-between items-center p-3 rounded-2xl border-2 ${esPos ? 'bg-emerald-50/80 border-emerald-100 text-emerald-950' : 'bg-rose-50/80 border-rose-100 text-rose-950'}">
-            <div>
-              <p class="font-black text-xs sm:text-sm">${h.motivo}</p>
-              <p class="text-[10px] text-slate-400 font-bold">${new Date(h.fecha).toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' })}</p>
+          <div class="flex justify-between items-center p-3 rounded-2xl border ${esPos ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950' : 'bg-rose-50/70 border-rose-200 text-rose-950'}">
+            <div class="pr-3">
+              <p class="font-bold text-xs sm:text-sm">${h.motivo}</p>
+              <p class="text-[10px] text-slate-400 font-bold">${fechaFormateada}</p>
             </div>
-            <span class="font-black text-sm font-heading ${esPos ? 'text-emerald-600' : 'text-rose-600'}">
-              ${esPos ? '+' : ''}$${h.monto}
+            <span class="font-black text-sm font-heading shrink-0 ${esPos ? 'text-emerald-600' : 'text-rose-600'}">
+              ${esPos ? '+$' : '-$'}${Math.abs(h.monto)}
             </span>
           </div>
         `;
       }).join('');
+
+      document.getElementById('alumno-historial').innerHTML =
+        historialHTML || `<p class="text-xs text-slate-400 italic">Aún no tienes movimientos registrados.</p>`;
+    }
+
+    function actualizarEstadoBebe(saldo) {
+      const box = document.getElementById('box-estado-bebe');
+      const emoji = document.getElementById('bebe-emoji');
+      const titulo = document.getElementById('bebe-estado-titulo');
+      const desc = document.getElementById('bebe-estado-desc');
+      const pct = document.getElementById('bebe-bienestar-pct');
+      const barra = document.getElementById('bebe-barra-bienestar');
+
+      if (saldo >= 800) {
+        box.className = 'p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-200 flex items-center gap-4';
+        emoji.textContent = '🥰';
+        titulo.textContent = '¡Tu bebé está sano, feliz y protegido!';
+        titulo.className = 'text-sm sm:text-base font-black font-heading text-emerald-900';
+        desc.textContent = 'Administras muy bien tu dinero. Tienes reservas para leche, pañales y emergencias.';
+        desc.className = 'text-xs font-bold text-emerald-700/90';
+        pct.textContent = '100%';
+        pct.className = 'text-xs font-black font-mono text-emerald-700';
+        barra.style.width = '100%';
+        barra.className = 'h-full bg-emerald-500 rounded-full transition-all duration-500';
+      } else if (saldo >= 300) {
+        box.className = 'p-4 rounded-2xl bg-sky-50 border-2 border-sky-200 flex items-center gap-4';
+        emoji.textContent = '🙂';
+        titulo.textContent = 'Tu bebé está bien, pero cuida tus gastos';
+        titulo.className = 'text-sm sm:text-base font-black font-heading text-sky-900';
+        desc.textContent = 'Te alcanza para lo básico, pero un imprevisto médico podría dejarte sin ahorros.';
+        desc.className = 'text-xs font-bold text-sky-700/90';
+        pct.textContent = '70%';
+        pct.className = 'text-xs font-black font-mono text-sky-700';
+        barra.style.width = '70%';
+        barra.className = 'h-full bg-sky-500 rounded-full transition-all duration-500';
+      } else if (saldo >= 0) {
+        box.className = 'p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 flex items-center gap-4';
+        emoji.textContent = '😟';
+        titulo.textContent = '¡Cuidado! Tu dinero está casi agotado';
+        titulo.className = 'text-sm sm:text-base font-black font-heading text-amber-900';
+        desc.textContent = 'Tienes muy poco saldo. Esfuérzate en tus actividades de clase para evitar caer en deuda.';
+        desc.className = 'text-xs font-bold text-amber-800';
+        pct.textContent = '35%';
+        pct.className = 'text-xs font-black font-mono text-amber-700';
+        barra.style.width = '35%';
+        barra.className = 'h-full bg-amber-500 rounded-full transition-all duration-500';
+      } else {
+        box.className = 'p-4 rounded-2xl bg-rose-100/80 border-2 border-rose-300 flex items-center gap-4';
+        emoji.textContent = '😭';
+        titulo.textContent = '¡Emergencia! No tienes dinero para tu bebé';
+        titulo.className = 'text-sm sm:text-base font-black font-heading text-rose-900';
+        desc.textContent = 'Revisa las 4 opciones de rescate abajo y entrega tu presupuesto a la maestra cuanto antes.';
+        desc.className = 'text-xs font-bold text-rose-800';
+        pct.textContent = '10%';
+        pct.className = 'text-xs font-black font-mono text-rose-700';
+        barra.style.width = '10%';
+        barra.className = 'h-full bg-rose-600 rounded-full transition-all duration-500';
+      }
     }
   </script>
 </body>
