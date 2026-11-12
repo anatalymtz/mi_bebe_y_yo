@@ -3,22 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cobro NFC - Mi Bebé y Yo</title>
+  <title>Registro Express NFC - Mi Bebé y Yo</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f0f4f8; margin: 0; padding: 20px; display: flex; justify-content: center; }
-    .tarjeta { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
-    .grupo-badge { background: #e2e8f0; color: #334155; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-bottom: 10px; }
-    h1 { font-size: 1.5rem; color: #1e293b; margin: 5px 0; }
-    .bebe-info { color: #64748b; font-size: 1rem; margin-bottom: 20px; }
-    .saldo-box { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 15px; margin-bottom: 20px; }
-    .saldo-label { font-size: 0.85rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-    .saldo-cantidad { font-size: 2.5rem; font-weight: 800; color: #0f172a; margin: 5px 0; }
-    .input-monto { width: 80%; padding: 12px; font-size: 1.2rem; text-align: center; border: 2px solid #cbd5e1; border-radius: 12px; margin-bottom: 15px; }
-    .botones { display: flex; gap: 10px; }
-    button { flex: 1; padding: 14px; border: none; border-radius: 12px; font-size: 1rem; font-weight: bold; color: white; cursor: pointer; }
-    .btn-cobrar { background-color: #ef4444; }
-    .btn-abonar { background-color: #10b981; }
-    .mensaje { margin-top: 15px; font-size: 0.9rem; font-weight: 500; min-height: 20px; }
+    :root {
+      --verde-bg: #e6f4ea;
+      --verde-texto: #137333;
+      --verde-borde: #a8dab5;
+      --rojo-bg: #fce8e6;
+      --rojo-texto: #c5221f;
+      --rojo-borde: #f5c2c0;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f0f4f8; margin: 0; padding: 15px; display: flex; justify-content: center; }
+    .tarjeta { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); width: 100%; max-width: 500px; text-align: center; }
+    
+    .grupo-badge { background: #e2e8f0; color: #334155; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-bottom: 8px; }
+    h1 { font-size: 1.6rem; color: #1e293b; margin: 4px 0; }
+    .bebe-info { color: #64748b; font-size: 0.95rem; margin-bottom: 15px; }
+    
+    .saldo-box { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 12px; margin-bottom: 20px; }
+    .saldo-label { font-size: 0.8rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+    .saldo-cantidad { font-size: 2.2rem; font-weight: 800; color: #0f172a; margin: 4px 0; }
+    
+    .seccion-titulo { font-size: 0.9rem; font-weight: 800; text-align: left; margin: 15px 0 8px 0; text-transform: uppercase; }
+    .titulo-ganancias { color: #137333; }
+    .titulo-gastos { color: #c5221f; }
+
+    .grid-botones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px; }
+    
+    .btn-accion {
+      padding: 10px 8px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1.5px solid;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.1s ease;
+    }
+    .btn-accion:active { transform: scale(0.96); }
+
+    .btn-ganancia { background-color: var(--verde-bg); color: var(--verde-texto); border-color: var(--verde-borde); }
+    .btn-gasto { background-color: var(--rojo-bg); color: var(--rojo-texto); border-color: var(--rojo-borde); }
+
+    .mensaje { margin-top: 15px; font-size: 0.9rem; font-weight: bold; min-height: 24px; }
   </style>
 </head>
 <body>
@@ -33,11 +63,32 @@
       <div class="saldo-cantidad" id="saldo">$0</div>
     </div>
 
-    <input type="number" id="monto" class="input-monto" placeholder="Escribe la cantidad ($)" inputmode="numeric">
+    <!-- SECCIÓN GANANCIAS -->
+    <div class="seccion-titulo titulo-ganancias">⭐ GANANCIAS E INGRESOS EXTRA (+)</div>
+    <div class="grid-botones">
+      <button class="btn-accion btn-ganancia" onclick="registrarAccion('Actividad', 100)">⭐ Actividad (+$100)</button>
+      <button class="btn-accion btn-ganancia" onclick="registrarAccion('Ayudante', 200)">🧑‍🏫 Ayudante (+$200)</button>
+      <button class="btn-accion btn-ganancia" onclick="registrarAccion('DIF', 200)">🏛️ DIF (+$200)</button>
+      <button class="btn-accion btn-ganancia" onclick="registrarAccion('Excelente', 300)">🏆 Excelente (+$300)</button>
+      <button class="btn-accion btn-ganancia" onclick="registrarAccion('Regalo $200', 200)">🎁 Regalo (+$200)</button>
+      <button class="btn-accion btn-ganancia" onclick="registrarAccion('Regalo $300', 300)">🎁 Regalo (+$300)</button>
+      <button class="btn-accion btn-ganancia" onclick="registrarAccion('Encontró dinero', 100)">💵 Encontró (+$100)</button>
+    </div>
 
-    <div class="botones">
-      <button class="btn-cobrar" onclick="aplicarMovimiento('cobro')">- Cobrar</button>
-      <button class="btn-abonar" onclick="aplicarMovimiento('abono')">+ Abonar</button>
+    <!-- SECCIÓN GASTOS -->
+    <div class="seccion-titulo titulo-gastos">💸 GASTOS E IMPREVISTOS (-)</div>
+    <div class="grid-botones">
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Maltrato', -1000)">🚨 Maltrato (-$1000)</button>
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Abandono', -500)">⚠️ Abandono (-$500)</button>
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Descuido', -300)">😭 Descuido (-$300)</button>
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Bebés ajenos', -400)">🍱 Bebés ajenos (-$400)</button>
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Comida/Pañal', -200)">🍼📎 Comida/Pañal (-$200)</button>
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Salud', -500)">🩺 Salud (-$500)</button>
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Guardería', -500)">🧸 Guardería (-$500)</button>
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Leche especial', -200)">🍼 Leche especial (-$200)</button>
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Perdió dinero', -100)">💸 Perdió dinero (-$100)</button>
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Juguete', -50)">🧸 Juguete (-$50)</button>
+      <button class="btn-accion btn-gasto" onclick="registrarAccion('Ropa', -100)">👕 Ropa (-$100)</button>
     </div>
 
     <div class="mensaje" id="mensaje"></div>
@@ -47,7 +98,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, get, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // Conexión directa a tu base de datos de Firebase
     const firebaseConfig = {
       databaseURL: "https://mi-bebe-y-yo-233db-default-rtdb.firebaseio.com"
     };
@@ -55,7 +105,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Leer el código del alumno desde la URL (?id=ALU-1041)
     const params = new URLSearchParams(window.location.search);
     const idAlumno = params.get('id');
 
@@ -83,49 +132,37 @@
       }
     }
 
-    window.aplicarMovimiento = async function(tipo) {
+    window.registrarAccion = async function(concepto, monto) {
       if (!datosActuales) return;
       
-      const input = document.getElementById('monto');
-      const cantidad = parseFloat(input.value);
       const msg = document.getElementById('mensaje');
-
-      if (!cantidad || cantidad <= 0) {
-        msg.style.color = "#ef4444";
-        msg.innerText = "Por favor escribe una cantidad válida.";
-        return;
-      }
-
       msg.style.color = "#64748b";
       msg.innerText = "Guardando en Firebase...";
 
-      const nuevoSaldo = tipo === 'cobro' 
-        ? datosActuales.saldo - cantidad 
-        : datosActuales.saldo + cantidad;
+      const nuevoSaldo = (datosActuales.saldo || 0) + monto;
 
       try {
         const alumnoRef = ref(db, `alumnos/${idAlumno}`);
         
-        // 1. Actualiza el saldo principal
+        // 1. Actualizar el saldo global del alumno
         await update(alumnoRef, { saldo: nuevoSaldo });
 
-        // 2. Guarda el registro en el historial del alumno
+        // 2. Guardar el movimiento detallado en su historial
         const historialRef = ref(db, `alumnos/${idAlumno}/historial`);
         await push(historialRef, {
-          tipo: tipo === 'cobro' ? 'Cobro NFC' : 'Abono NFC',
-          monto: cantidad,
-          fecha: new Date().toLocaleDateString('es-MX')
+          concepto: concepto,
+          monto: monto,
+          fecha: new Date().toLocaleString('es-MX')
         });
 
         datosActuales.saldo = nuevoSaldo;
         document.getElementById('saldo').innerText = `$${nuevoSaldo}`;
-        input.value = "";
         
-        msg.style.color = "#10b981";
-        msg.innerText = `¡Listo! ${tipo === 'cobro' ? 'Cobro' : 'Abono'} de $${cantidad} aplicado.`;
+        msg.style.color = monto > 0 ? "#137333" : "#c5221f";
+        msg.innerText = `¡Listo! ${concepto} (${monto > 0 ? '+' : ''}$${monto}) registrado.`;
       } catch (error) {
         msg.style.color = "#ef4444";
-        msg.innerText = "Error al guardar. Revisa las reglas de Firebase.";
+        msg.innerText = "Error al guardar en Firebase.";
       }
     };
 
